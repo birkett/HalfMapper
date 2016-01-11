@@ -1,3 +1,6 @@
+#include <fstream>
+#include <iostream>
+#include "GL/glew.h"
 #include "bsp.h"
 #include "wad.h"
 

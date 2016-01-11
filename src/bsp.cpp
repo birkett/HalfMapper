@@ -1,16 +1,20 @@
-#include "common.h"
+#include <cstring>
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <GL/glew.h>
 #include "bsp.h"
 #include "entities.h"
 #include "ConfigXML.h"
-#include <cstring>
+
 
 map <string, TEXTURE> textures;
-map <string, vector<pair<VERTEX,string> > > landmarks;
+map <string, vector<pair<Vertex3f,string> > > landmarks;
 map <string, vector<string> > dontRenderModel;
-map <string, VERTEX> offsets;
+map <string, Vertex3f> offsets;
 
 //Correct UV coordinates
-static inline COORDS calcCoords(VERTEX v, VERTEX vs, VERTEX vt, float sShift, float tShift){
+static inline COORDS calcCoords(Vertex3f v, Vertex3f vs, Vertex3f vt, float sShift, float tShift){
 	COORDS ret;
 	ret.u = sShift + vs.x*v.x + vs.y*v.y + vs.z*v.z; 
 	ret.v = tShift + vt.x*v.x + vt.y*v.y + vt.z*v.z;
@@ -68,10 +72,10 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 	
 	
 	//Read Vertices
-	vector <VERTEX> vertices;
+	vector <Vertex3f> vertices;
 	inBSP.seekg(bHeader.lump[LUMP_VERTICES].nOffset, ios::beg);		
 	for(int i=0;i<bHeader.lump[LUMP_VERTICES].nLength/12;i++){
-		VERTEX v;
+		Vertex3f v;
 		inBSP.read((char*)&v, sizeof(v));
 		vertices.push_back(v);
 	}
@@ -82,12 +86,12 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 	inBSP.read((char*)edges, bHeader.lump[LUMP_EDGES].nLength);
 	
 	//Read Surfedges
-	vector <VERTEX> verticesPrime;
+	vector <Vertex3f> verticesPrime;
 	inBSP.seekg(bHeader.lump[LUMP_SURFEDGES].nOffset, ios::beg);
 	for(int i=0;i<bHeader.lump[LUMP_SURFEDGES].nLength/(int)sizeof(int);i++){
 		int e;
 		inBSP.read((char*)&e, sizeof(e));
-		verticesPrime.push_back(vertices[edges[e>0?e:-e].iVertex[e>0?0:1]]);
+		verticesPrime.push_back(vertices[edges[e>0?e:-e].iVertex3f[e>0?0:1]]);
 	}
 	
 	//Read Lightmaps
@@ -236,7 +240,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 		maxUV[i*2] = maxUV[i*2+1] = -99999;
 		
 		for(int j=2,k=1;j<f.nEdges;j++,k++){	
-			VERTEX v1 = verticesPrime[f.iFirstEdge], v2 = verticesPrime[f.iFirstEdge+k], v3 = verticesPrime[f.iFirstEdge+j];
+			Vertex3f v1 = verticesPrime[f.iFirstEdge], v2 = verticesPrime[f.iFirstEdge+k], v3 = verticesPrime[f.iFirstEdge+j];
 			COORDS c1 = calcCoords(v1, b.vS, b.vT, b.fSShift, b.fTShift),
 				   c2 = calcCoords(v2, b.vS, b.vT, b.fSShift, b.fTShift),
 				   c3 = calcCoords(v3, b.vS, b.vT, b.fSShift, b.fTShift);
@@ -333,7 +337,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 		vector <VECFINAL>*vt = &texturedTris[faceTexName].triangles;
 		
 		for(int j=2,k=1;j<f.nEdges;j++,k++){	
-			VERTEX v1 = verticesPrime[f.iFirstEdge], v2 = verticesPrime[f.iFirstEdge+k], v3 = verticesPrime[f.iFirstEdge+j];
+			Vertex3f v1 = verticesPrime[f.iFirstEdge], v2 = verticesPrime[f.iFirstEdge+k], v3 = verticesPrime[f.iFirstEdge+j];
 			COORDS c1 = calcCoords(v1, b.vS, b.vT, b.fSShift, b.fTShift),
 				   c2 = calcCoords(v2, b.vS, b.vT, b.fSShift, b.fTShift),
 				   c3 = calcCoords(v3, b.vS, b.vT, b.fSShift, b.fTShift);
@@ -356,9 +360,9 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 			c1.u /= t.w; c2.u /= t.w; c3.u /= t.w;
 			c1.v /= t.h; c2.v /= t.h; c3.v /= t.h;
 			
-			v1.fixHand();
-			v2.fixHand();
-			v3.fixHand();
+			v1.FixHand();
+			v2.FixHand();
+			v3.FixHand();
 			
 			vt->push_back(VECFINAL(v1,c1,c1l));
 			vt->push_back(VECFINAL(v2,c2,c2l));
@@ -402,19 +406,19 @@ void BSP::calculateOffset(){
 	}else{
 		if(mapId == "c0a0"){
 			//Origin for other maps
-			offsets[mapId] = VERTEX(0,0,0);
+			offsets[mapId] = Vertex3f(0,0,0);
 		}else{
 			float ox=0,oy=0,oz=0;
 			bool found=false;
-			for(map <string, vector<pair<VERTEX,string> > >::iterator it = landmarks.begin(); it != landmarks.end();it++){
+			for(map <string, vector<pair<Vertex3f,string> > >::iterator it = landmarks.begin(); it != landmarks.end();it++){
 				if((*it).second.size() > 1){
 					for(size_t i=0;i<(*it).second.size();i++){
 						if((*it).second[i].second == mapId){
 							if(i == 0){
 								if(offsets.count((*it).second[i+1].second) != 0){
-									VERTEX c1 = (*it).second[i].first;
-									VERTEX c2 = (*it).second[i+1].first;
-									VERTEX c3 = offsets[(*it).second[i+1].second];
+									Vertex3f c1 = (*it).second[i].first;
+									Vertex3f c2 = (*it).second[i+1].first;
+									Vertex3f c3 = offsets[(*it).second[i+1].second];
 									ox = + c2.x + c3.x - c1.x;
 									oy = + c2.y + c3.y - c1.y;
 									oz = + c2.z + c3.z - c1.z;
@@ -425,9 +429,9 @@ void BSP::calculateOffset(){
 								}
 							}else{
 								if(offsets.count((*it).second[i-1].second) != 0){
-									VERTEX c1 = (*it).second[i].first;
-									VERTEX c2 = (*it).second[i-1].first;
-									VERTEX c3 = offsets[(*it).second[i-1].second];
+									Vertex3f c1 = (*it).second[i].first;
+									Vertex3f c2 = (*it).second[i-1].first;
+									Vertex3f c3 = offsets[(*it).second[i-1].second];
 									ox = + c2.x + c3.x - c1.x;
 									oy = + c2.y + c3.y - c1.y;
 									oz = + c2.z + c3.z - c1.z;
@@ -445,7 +449,7 @@ void BSP::calculateOffset(){
 			if(!found){
 				cout << "Cant find matching landmarks for " << mapId << endl;  
 			}
-			offsets[mapId] = VERTEX(ox,oy,oz);
+			offsets[mapId] = Vertex3f(ox,oy,oz);
 		}
 	}
 }

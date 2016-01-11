@@ -1,4 +1,5 @@
-#include "common.h"
+#include <sstream>
+#include <iostream>
 #include "bsp.h"
 #include "ConfigXML.h"
 
@@ -11,7 +12,7 @@ void parseEntities(const string &szStr, const string &id, const MapEntry &sMapEn
 	bool isLandMark=false,isChangeLevel=false,isTeleport=false;
 	
 	map <string,int> changelevels;
-	map <string,VERTEX> ret;
+	map <string,Vertex3f> ret;
 	
 	while(ss.good()){
 		string str;
@@ -29,8 +30,8 @@ void parseEntities(const string &szStr, const string &id, const MapEntry &sMapEn
 				if(isLandMark){
 					float x,y,z;					
 					sscanf(origin.c_str(),"%f %f %f", &x,&y,&z);
-					VERTEX v(x,y,z);
-					v.fixHand();
+					Vertex3f v(x,y,z);
+					v.FixHand();
 					
 					if(sMapEntry.m_szOffsetTargetName == "c1a1b" && sMapEntry.m_szName == "c1a1b") {
 						//The original map landmark is wrong, and c1a1f ends up being bellow c1a1b
@@ -78,7 +79,7 @@ void parseEntities(const string &szStr, const string &id, const MapEntry &sMapEn
 			}
 		}
 	}
-	for(map <string,VERTEX>::iterator it=ret.begin(); it!=ret.end(); it++){
+	for(map <string,Vertex3f>::iterator it=ret.begin(); it!=ret.end(); it++){
 		if(changelevels.count((*it).first) != 0){
 			landmarks[(*it).first].push_back(make_pair((*it).second, id));
 		}

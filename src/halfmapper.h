@@ -23,6 +23,7 @@
 #define HALFMAPPER_H
 
 #include <vector>
+#include "CommonTypes.h"
 
 // Forward declarations.
 class ConfigXML;
@@ -67,13 +68,9 @@ private:
 	std::vector<BSP*> m_LoadedMaps;       /** Vector of loaded maps. */
 
 	bool              m_bShouldQuit;      /** Set to true when a quit event is received. */
-	float             m_fFrontal;         /** Requested position offset. */
-	float             m_fLeft;            /** Requested position offset. */
-	float             m_fRotation[2];     /** Camera rotation. */
-	float             m_fPosition[3];     /** Camera position. */
+	Point2f*          m_fRotation;        /** Camera rotation. */
+	Point3f*          m_fPosition;        /** Camera position. */
 	float             m_fIsoBounds;       /** Isometric boundaries. */
-	int               m_iVerticalSpeed;   /** Vertical speed modifier. */
-	int               m_iHorizontalSpeed; /** Horizontal speed modifier. */
 
 };//end HalfMapper
 

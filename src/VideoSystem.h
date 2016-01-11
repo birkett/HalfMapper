@@ -22,6 +22,8 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+#include "CommonTypes.h"
+
 // Avoid including SDL just for these basic types.
 typedef struct SDL_Window SDL_Window;
 typedef void *SDL_GLContext;
@@ -63,7 +65,7 @@ public:
 	 * \param fRotation  Angle of the camera.
 	 * \param fIsoBounds Orthographic boundaries.
 	 */
-	void SetCamera(bool bIsometric, float fPosition[3], float fRotation[2], float fIsoBounds);
+	void SetCamera(bool bIsometric, Point3f* fPosition, Point2f* fRotation, float fIsoBounds);
 
 	/**
 	 * Set the title of the program window.

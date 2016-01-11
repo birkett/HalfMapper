@@ -1,7 +1,11 @@
 #ifndef BSP_H
 #define BSP_H
 
-#include "common.h"
+#include <map>
+#include <vector>
+#include <string>
+
+using namespace std;
 
 //Extracted from http://hlbsp.sourceforge.net/index.php?content=bspdef
 
@@ -26,6 +30,35 @@
 
 struct MapEntry; // Dont include ConfigXML.h here.
 
+struct Vertex3f
+{
+	Vertex3f()
+	{
+		x = y = z = 0.0f;
+	}
+
+	Vertex3f(float _x, float _y, float _z)
+	{
+		x = _x;
+		y = _y;
+		z = _z;
+	}
+
+	void FixHand()
+	{
+		float swapY = y;
+		y = z;
+		z = swapY;
+		x = -x;
+	}
+
+	float x;
+	float y;
+	float z;
+
+};
+
+
 struct BSPLUMP{
 	int32_t nOffset; // File offset to data
 	int32_t nLength; // Length of data
@@ -44,12 +77,12 @@ struct BSPFACE{
 	uint32_t nLightmapOffset; // Offsets into the raw lightmap data
 };
 struct BSPEDGE{
-	uint16_t iVertex[2]; // Indices into vertex array
+	uint16_t iVertex3f[2]; // Indices into Vertex3f array
 };
 struct BSPTEXTUREINFO{
-	VERTEX vS; 
+	Vertex3f vS; 
 	float fSShift;    // Texture shift in s direction
-	VERTEX vT; 
+	Vertex3f vT; 
 	float fTShift;    // Texture shift in t direction
 	uint32_t iMiptex; // Index into textures array
 	uint32_t nFlags;  // Texture flags, seem to always be 0
@@ -66,7 +99,7 @@ struct BSPMIPTEX{
 #define MAX_MAP_HULLS 4
 struct BSPMODEL{
     float nMins[3], nMaxs[3];          // Defines bounding box
-    VERTEX vOrigin;                  // Coordinates to move the // coordinate system
+    Vertex3f vOrigin;                  // Coordinates to move the // coordinate system
     int32_t iHeadnodes[MAX_MAP_HULLS]; // Index into nodes array
     int32_t nVisLeafs;                 // ???
     int32_t iFirstFace, nFaces;        // Index and count into faces
@@ -84,7 +117,7 @@ struct VECFINAL{
 		u = _u;
 		v = _v;
 	}
-	VECFINAL(VERTEX vt, COORDS c, COORDS c2){
+	VECFINAL(Vertex3f vt, COORDS c, COORDS c2){
 		x = vt.x, y = vt.y, z = vt.z;
 		u = c.u, v = c.v;
 		ul = c2.u;
@@ -92,7 +125,7 @@ struct VECFINAL{
 	}
 };
 struct TEXTURE{
-	GLuint texId;
+	unsigned int texId;
 	int w,h;
 };
 struct LMAP{
@@ -114,17 +147,17 @@ class BSP{
 	private:
 		void calculateOffset();
 
-		unsigned char *lmapAtlas; GLuint lmapTexId;
+		unsigned char *lmapAtlas; unsigned int lmapTexId;
 		map <string, TEXSTUFF > texturedTris;
-		GLuint *bufObjects;
+		unsigned int *bufObjects;
 		string mapId;
-		VERTEX offset;
+		Vertex3f offset;
 
-		VERTEX ConfigOffsetChapter;
+		Vertex3f ConfigOffsetChapter;
 };
 
 extern map <string, TEXTURE> textures;
-extern map <string, vector<pair<VERTEX,string> > > landmarks;
+extern map <string, vector<pair<Vertex3f,string> > > landmarks;
 extern map <string, vector<string> > dontRenderModel;
 
 #endif

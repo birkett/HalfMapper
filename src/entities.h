@@ -3,6 +3,6 @@
 
 struct MapEntry;
 
-void parseEntities(const string &str, const string &id, const MapEntry &sMapEntry);
+void parseEntities(const std::string &str, const std::string &id, const MapEntry &sMapEntry);
 
 #endif

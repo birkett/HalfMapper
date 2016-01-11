@@ -133,7 +133,7 @@ void VideoSystem::SwapBuffers()
  * \param fRotation  Angle of the camera.
  * \param fIsoBounds Orthographic boundaries.
  */
-void VideoSystem::SetCamera(bool bIsometric, float fPosition[3], float fRotation[2], float fIsoBounds)
+void VideoSystem::SetCamera(bool bIsometric, Point3f* fPosition, Point2f* fRotation, float fIsoBounds)
 {
 	if (bIsometric) {
 		glMatrixMode(GL_PROJECTION);
@@ -143,16 +143,16 @@ void VideoSystem::SetCamera(bool bIsometric, float fPosition[3], float fRotation
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glScalef(1.0f, 2.0f, 1.0f);
-		glRotatef(fRotation[1], 1.0f, 0.0f, 0.0f);
-		glRotatef(fRotation[0], 0.0f, 1.0f, 0.0f);
-		glTranslatef(-fPosition[0], -fPosition[1], -fPosition[2]);
+		glRotatef(fRotation->m_fY, 1.0f, 0.0f, 0.0f);
+		glRotatef(fRotation->m_fX, 0.0f, 1.0f, 0.0f);
+		glTranslatef(-fPosition->m_fX, -fPosition->m_fY, -fPosition->m_fZ);
 	}
 	else {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glRotated(fRotation[1], 1.0f, 0.0f, 0.0f);
-		glRotated(fRotation[0], 0.0f, 1.0f, 0.0f);
-		glTranslatef(-fPosition[0], -fPosition[1], -fPosition[2]);
+		glRotated(fRotation->m_fY, 1.0f, 0.0f, 0.0f);
+		glRotated(fRotation->m_fX, 0.0f, 1.0f, 0.0f);
+		glTranslatef(-fPosition->m_fX, -fPosition->m_fY, -fPosition->m_fZ);
 	}
 
 }//end VideoSystem::SetCamera()
