@@ -31,6 +31,16 @@
  */
 HalfMapper::HalfMapper()
 {
+	this->m_bShouldQuit  = false;
+
+	this->m_fRotation[0] = 0.0f;
+	this->m_fRotation[1] = 0.0f;
+
+	this->m_fPosition[0] = 0.0f;
+	this->m_fPosition[1] = 0.0f;
+	this->m_fPosition[2] = 0.0f;
+
+	this->m_fIsoBounds   = 1000.0;
 
 }//end HalfMapper::HalfMapper()
 
@@ -137,87 +147,89 @@ void HalfMapper::LoadMaps()
 
 
 /**
+ * Handle keyboard, mouse and event input.
+ */
+void HalfMapper::InputLoop()
+{
+	this->m_fLeft    = 0.0f;
+	this->m_fFrontal = 0.0f;
+
+	// Handle movement with the keyboard state. Cleaner than checking SDL_KEYUP and SDL_KEYDOWN.
+	const Uint8* keystate = SDL_GetKeyboardState(NULL);
+
+	if (keystate[SDL_SCANCODE_W]) { this->m_fFrontal++; }
+	if (keystate[SDL_SCANCODE_S]) { this->m_fFrontal--; }
+	if (keystate[SDL_SCANCODE_A]) { this->m_fLeft++;    }
+	if (keystate[SDL_SCANCODE_D]) { this->m_fLeft--;    }
+
+	if (keystate[SDL_SCANCODE_LCTRL])  { this->m_iVerticalSpeed = this->m_iHorizontalSpeed = 2; }
+	if (keystate[SDL_SCANCODE_LSHIFT]) { this->m_iVerticalSpeed = this->m_iHorizontalSpeed = 32; }
+
+	if (keystate[SDL_SCANCODE_Q]) {
+		this->m_XMLConfiguration->m_bIsometric ? (this->m_fIsoBounds -= m_iVerticalSpeed * 10.0f) : (m_fPosition[1] -= m_iVerticalSpeed);
+	}
+	if (keystate[SDL_SCANCODE_E]) {
+		this->m_XMLConfiguration->m_bIsometric ? (this->m_fIsoBounds += m_iVerticalSpeed * 10.0f) : (m_fPosition[1] += m_iVerticalSpeed);
+	}
+
+	// Handle mouse movement and events.
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+			case SDL_QUIT:
+				this ->m_bShouldQuit = true; break;
+
+			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_ESCAPE) {
+					this->m_bShouldQuit = true;
+				}
+				break;
+
+			case SDL_MOUSEMOTION:
+				m_fRotation[0] += event.motion.xrel / 15.0f;
+				m_fRotation[1] += event.motion.yrel / 15.0f;
+				break;
+		}//end switch(event.type)
+	}//end while
+
+	// Clamp mouse aim.
+	if (m_fRotation[0] > 360) { m_fRotation[0] -= 360.0; }
+	if (m_fRotation[0] < 0  ) { m_fRotation[0] += 360.0; }
+	if (m_fRotation[1] < -89) { m_fRotation[1]  = -89;   }
+	if (m_fRotation[1] > 89 ) { m_fRotation[1]  = 89;    }
+
+	// Calculate camera position.
+	if (this->m_XMLConfiguration->m_bIsometric) {
+		m_fPosition[2] += m_fLeft    * m_iHorizontalSpeed;
+		m_fPosition[1] += m_fFrontal * m_iHorizontalSpeed;
+		m_fIsoBounds = max(10.0f, m_fIsoBounds);
+	}
+	else {
+		if (m_fFrontal || m_fLeft) {
+			float rotationF = this->m_fRotation[0] * (float)M_PI / 180.0f + atan2(m_fFrontal, m_fLeft);
+			m_fPosition[0] -= m_iHorizontalSpeed * cos(rotationF);
+			m_fPosition[2] -= m_iHorizontalSpeed * sin(rotationF);
+		}
+	}
+
+}//end HalfMapper::InputLoop()
+
+
+/**
  * Main program loop.
  */
 void HalfMapper::MainLoop()
 {
-	bool quit = false;
-	int kw = 0, ks = 0, ka = 0, kd = 0, kq = 0, ke = 0, kr = 0, kc = 0;
-	float position[3] = { 0.0f, 0.0f, 0.0f };
-	float rotation[2] = { 0.0f, 0.0f };
-	float isoBounds = 1000.0;
 	int oldMs = SDL_GetTicks(), frame = 0;
 
-	while (!quit) {
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) quit = true;
-			if (event.type == SDL_KEYDOWN) {
-				if (event.key.keysym.sym == SDLK_ESCAPE) quit = true;
-				if (event.key.keysym.sym == SDLK_w) kw = 1;
-				if (event.key.keysym.sym == SDLK_s) ks = 1;
-				if (event.key.keysym.sym == SDLK_a) ka = 1;
-				if (event.key.keysym.sym == SDLK_d) kd = 1;
-				if (event.key.keysym.sym == SDLK_q) kq = 1;
-				if (event.key.keysym.sym == SDLK_e) ke = 1;
+	while (!this->m_bShouldQuit) {
+		this->m_iVerticalSpeed = 8;
+		this->m_iHorizontalSpeed = 8;
 
-				if (event.key.keysym.sym == SDLK_LSHIFT) kr = 1;
-				if (event.key.keysym.sym == SDLK_LCTRL) kc = 1;
-			}
-			if (event.type == SDL_KEYUP) {
-				if (event.key.keysym.sym == SDLK_w) kw = 0;
-				if (event.key.keysym.sym == SDLK_s) ks = 0;
-				if (event.key.keysym.sym == SDLK_a) ka = 0;
-				if (event.key.keysym.sym == SDLK_d) kd = 0;
-				if (event.key.keysym.sym == SDLK_q) kq = 0;
-				if (event.key.keysym.sym == SDLK_e) ke = 0;
-
-				if (event.key.keysym.sym == SDLK_LSHIFT) kr = 0;
-				if (event.key.keysym.sym == SDLK_LCTRL) kc = 0;
-			}
-			if (event.type == SDL_MOUSEMOTION) {
-				rotation[0] += event.motion.xrel / 15.0f;
-				rotation[1] += event.motion.yrel / 15.0f;
-			}
-		}
-
-		//Clamp mouse aim
-		if (rotation[0] > 360) rotation[0] -= 360.0;
-		if (rotation[0] < 0) rotation[0] += 360.0;
-		if (rotation[1] < -89) rotation[1] = -89;
-		if (rotation[1] > 89) rotation[1] = 89;
-
-		//Velocities
-		int vsp = kr ? 32 : (kc ? 2 : 8), hsp = kr ? 32 : (kc ? 2 : 8);
-
-		float m_left = 0.0f, m_frontal = 0.0f;
-
-		if (kw) m_frontal++;
-		if (ks) m_frontal--;
-		if (ka) m_left++;
-		if (kd) m_left--;
-
-		if (this->m_XMLConfiguration->m_bIsometric) {
-			position[2] += m_left * hsp;
-			position[1] += m_frontal * hsp;
-
-			if (ke) isoBounds += vsp * 10.0f;
-			if (kq) isoBounds -= vsp * 10.0f;
-			isoBounds = max(10.0f, isoBounds);
-		}
-		else {
-			if (m_frontal || m_left) {
-				float rotationF = rotation[0] * (float)M_PI / 180.0f + atan2(m_frontal, m_left);
-				position[0] -= hsp * cos(rotationF);
-				position[2] -= hsp * sin(rotationF);
-			}
-			if (ke) position[1] += vsp;
-			if (kq) position[1] -= vsp;
-		}
-
+		this->InputLoop();
 		this->m_VideoSystem->ClearBuffer();
 
-		this->m_VideoSystem->SetCamera(this->m_XMLConfiguration->m_bIsometric, position, rotation, isoBounds);
+		this->m_VideoSystem->SetCamera(this->m_XMLConfiguration->m_bIsometric, this->m_fPosition, this->m_fRotation, this->m_fIsoBounds);
 
 		//Map render
 		for (size_t i = 0; i < this->m_LoadedMaps.size(); i++) {
@@ -234,10 +246,10 @@ void HalfMapper::MainLoop()
 			int dt = SDL_GetTicks() - oldMs;
 			oldMs = SDL_GetTicks();
 			char bf[64];
-			sprintf(bf, "%.2f FPS - %.2f %.2f %.2f", 30000.0f / (float)dt, position[0], position[1], position[2]);
+			sprintf(bf, "%.2f FPS - %.2f %.2f %.2f", 30000.0f / (float)dt, this->m_fPosition[0], this->m_fPosition[1], this->m_fPosition[2]);
 			this->m_VideoSystem->SetWindowTitle(bf);
 		}
-	}
+	}//end while
 
 	SDL_Quit();
 

@@ -56,12 +56,24 @@ private:
 	/** Load BSP's from the configured gamepaths. */
 	void LoadMaps();
 
+	/** Handle keyboard, mouse and event input.	*/
+	void InputLoop();
+
 	/** Program main loop. */
 	void MainLoop();
 
 	ConfigXML*        m_XMLConfiguration; /** Loaded configuration data. */
 	VideoSystem*      m_VideoSystem;      /** Pointer to the video system */
 	std::vector<BSP*> m_LoadedMaps;       /** Vector of loaded maps. */
+
+	bool              m_bShouldQuit;      /** Set to true when a quit event is received. */
+	float             m_fFrontal;         /** Requested position offset. */
+	float             m_fLeft;            /** Requested position offset. */
+	float             m_fRotation[2];     /** Camera rotation. */
+	float             m_fPosition[3];     /** Camera position. */
+	float             m_fIsoBounds;       /** Isometric boundaries. */
+	int               m_iVerticalSpeed;   /** Vertical speed modifier. */
+	int               m_iHorizontalSpeed; /** Horizontal speed modifier. */
 
 };//end HalfMapper
 
