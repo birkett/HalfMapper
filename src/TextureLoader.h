@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
-#ifndef WAD_H
-#define WAD_H
+#ifndef TEXTURELOADER_H
+#define TEXTURELOADER_H
 
 #include <vector>
 #include <string>
@@ -82,11 +82,11 @@ struct Texture
 };//end WadTexture
 
 
-class WadLoader
+class TextureLoader
 {
 public:
-	WadLoader();
-	~WadLoader();
+	TextureLoader();
+	~TextureLoader();
 
 	int LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const std::string &szFilename);
 
@@ -100,6 +100,6 @@ private:
 	std::ifstream m_sWadFile;                         /** File stream to load the WAD. */
 	std::map<std::string, Texture> m_vLoadedTextures; /** Map of loaded textures, accessible by name. */
 
-};//end WadLoader
+};//end TextureLoader
 
-#endif
+#endif //TEXTURELOADER_H

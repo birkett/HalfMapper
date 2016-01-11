@@ -1,25 +1,25 @@
 #include <iostream>
 #include "GL/glew.h"
 #include "bsp.h"
-#include "wad.h"
+#include "TextureLoader.h"
 
 /**
  * Constructor.
  */
-WadLoader::WadLoader()
+TextureLoader::TextureLoader()
 {
 
-}//end WadLoader::WadLoader()
+}//end TextureLoader::TextureLoader()
 
 
 /**
  * Destructor.
  */
-WadLoader::~WadLoader()
+TextureLoader::~TextureLoader()
 {
 	this->m_sWadFile.close();
 
-}//end WadLoader::~WadLoader()
+}//end TextureLoader::~TextureLoader()
 
 
 /**
@@ -27,7 +27,7 @@ WadLoader::~WadLoader()
  * \param szGamePaths A vector of gamepath strings.
  * \param szFilename  Filename to load.
  */
-int WadLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const string &szFilename) {
+int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const string &szFilename) {
 
 	// Try to open the file from all known gamepaths.
 	for (size_t i = 0; i < szGamePaths.size(); i++) {
@@ -128,7 +128,7 @@ int WadLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, 
  * Check if a loaded WAD header is valid.
  * \param sHeader Loaded WAD header structure.
  */
-bool WadLoader::IsValidWADHeader(const WadHeader &sHeader)
+bool TextureLoader::IsValidWADHeader(const WadHeader &sHeader)
 {
 	if (   sHeader.szMagic[0] != 'W'
 		|| sHeader.szMagic[1] != 'A'
@@ -140,4 +140,4 @@ bool WadLoader::IsValidWADHeader(const WadHeader &sHeader)
 
 	return true;
 
-}//end WadLoader::IsValidWADHeader()
+}//end TextureLoader::IsValidWADHeader()

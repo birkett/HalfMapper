@@ -24,7 +24,7 @@
 #include <SDL.h>
 #include "halfmapper.h"
 #include "VideoSystem.h"
-#include "wad.h"
+#include "TextureLoader.h"
 #include "bsp.h"
 #include "ConfigXML.h"
 
@@ -49,7 +49,7 @@ HalfMapper::HalfMapper()
 HalfMapper::~HalfMapper()
 {
 	m_LoadedMaps.clear();
-	delete this->m_WadLoader;
+	delete this->m_TextureLoader;
 	delete this->m_VideoSystem;
 	delete this->m_XMLConfiguration;
 	delete this->m_fPosition;
@@ -102,10 +102,10 @@ int HalfMapper::Run(const int iArgc, char* szArgv[])
  */
 int HalfMapper::LoadTextures()
 {
-	this->m_WadLoader = new WadLoader();
+	this->m_TextureLoader = new TextureLoader();
 
 	for (size_t i = 0; i < this->m_XMLConfiguration->m_vWads.size(); i++) {
-		if (this->m_WadLoader->LoadTexturesFromWAD(this->m_XMLConfiguration->m_szGamePaths, this->m_XMLConfiguration->m_vWads[i] + ".wad") != 0) {
+		if (this->m_TextureLoader->LoadTexturesFromWAD(this->m_XMLConfiguration->m_szGamePaths, this->m_XMLConfiguration->m_vWads[i] + ".wad") != 0) {
 			return -1;
 		}
 	}
