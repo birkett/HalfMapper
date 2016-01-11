@@ -57,6 +57,15 @@ public:
 	void SwapBuffers();
 
 	/**
+	 * Setup the camera, in standard, or isometric mode.
+	 * \param bIsometric Set isometric mode.
+	 * \param fPosition  Position of the camera.
+	 * \param fRotation  Angle of the camera.
+	 * \param fIsoBounds Orthographic boundaries.
+	 */
+	void SetCamera(bool bIsometric, float fPosition[3], float fRotation[2], float fIsoBounds);
+
+	/**
 	 * Set the title of the program window.
 	 * \param szTitle New window title.
 	 */

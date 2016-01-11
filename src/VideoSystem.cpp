@@ -127,6 +127,38 @@ void VideoSystem::SwapBuffers()
 
 
 /**
+ * Setup the camera, in standard, or isometric mode.
+ * \param bIsometric Set isometric mode.
+ * \param fPosition  Position of the camera.
+ * \param fRotation  Angle of the camera.
+ * \param fIsoBounds Orthographic boundaries.
+ */
+void VideoSystem::SetCamera(bool bIsometric, float fPosition[3], float fRotation[2], float fIsoBounds)
+{
+	if (bIsometric) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(-fIsoBounds, fIsoBounds, -fIsoBounds, fIsoBounds, -100000.0, 100000.0);
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glScalef(1.0f, 2.0f, 1.0f);
+		glRotatef(fRotation[1], 1.0f, 0.0f, 0.0f);
+		glRotatef(fRotation[0], 0.0f, 1.0f, 0.0f);
+		glTranslatef(-fPosition[0], -fPosition[1], -fPosition[2]);
+	}
+	else {
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glRotated(fRotation[1], 1.0f, 0.0f, 0.0f);
+		glRotated(fRotation[0], 0.0f, 1.0f, 0.0f);
+		glTranslatef(-fPosition[0], -fPosition[1], -fPosition[2]);
+	}
+
+}//end VideoSystem::SetCamera()
+
+
+/**
  * Set the title of the program window.
  * \param szTitle New window title.
  */
