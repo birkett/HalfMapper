@@ -62,7 +62,7 @@ HalfMapper::~HalfMapper()
  * \param iArgc  Number of program arguments.
  * \param szArgv Array of arguments.
  */
-int HalfMapper::Run(int iArgc, char* szArgv[])
+int HalfMapper::Run(const int iArgc, char* szArgv[])
 {
 	this->m_XMLConfiguration = new ConfigXML();
 

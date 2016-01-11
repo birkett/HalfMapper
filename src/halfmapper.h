@@ -48,7 +48,7 @@ public:
 	 * \param iArgc  Number of program arguments.
 	 * \param szArgv Array of arguments.
 	 */
-	int Run(int iArgc, char* szArgv[]);
+	int Run(const int iArgc, char* szArgv[]);
 
 private:
 	/** Load WAD's from the configured gamepaths. */

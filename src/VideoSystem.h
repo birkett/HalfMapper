@@ -44,7 +44,7 @@ public:
 	 * \param bMultisampling Enable or disable multisampling.
 	 * \param bVsync         Enable or disable Vsync.
 	 */
-	VideoSystem(int iWidth, int iHeight, float fFov, bool bFullscreen, bool bMultisampling, bool bVsync);
+	VideoSystem(const int iWidth, const int iHeight, const float fFov, const bool bFullscreen, const bool bMultisampling, const bool bVsync);
 
 	/** Destructor */
 	~VideoSystem();
@@ -65,7 +65,7 @@ public:
 	 * \param fRotation  Angle of the camera.
 	 * \param fIsoBounds Orthographic boundaries.
 	 */
-	void SetCamera(bool bIsometric, Point3f* fPosition, Point2f* fRotation, float fIsoBounds);
+	void SetCamera(const bool bIsometric, const Point3f* fPosition, const Point2f* fRotation, const float fIsoBounds);
 
 	/**
 	 * Set the title of the program window.
@@ -81,13 +81,13 @@ private:
 	 * Enable or disable multisampling for the GL context.
 	 * \param bEnable Enable or Disable.
 	 */
-	void SetMultisampling(bool bEnable);
+	void SetMultisampling(const bool bEnable);
 
 	/**
 	* Enable or disable Vsync for the GL context.
 	* \param bEnable Enable or Disable.
 	*/
-	void SetVsync(bool bEnable);
+	void SetVsync(const bool bEnable);
 
 	unsigned int  m_iWidth;         /** Window width. */
 	unsigned int  m_iHeight;        /** Window height. */

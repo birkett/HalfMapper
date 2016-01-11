@@ -33,7 +33,7 @@
  * \param bMultisampling Enable or disable multisampling.
  * \param bVsync         Enable or disable Vsync.
  */
-VideoSystem::VideoSystem(int iWidth, int iHeight, float fFov, bool bFullscreen, bool bMultisampling, bool bVsync)
+VideoSystem::VideoSystem(const int iWidth, const int iHeight, const float fFov, const bool bFullscreen, const bool bMultisampling, const bool bVsync)
 {
 	m_iWidth         = iWidth;
 	m_iHeight        = iHeight;
@@ -133,7 +133,7 @@ void VideoSystem::SwapBuffers()
  * \param fRotation  Angle of the camera.
  * \param fIsoBounds Orthographic boundaries.
  */
-void VideoSystem::SetCamera(bool bIsometric, Point3f* fPosition, Point2f* fRotation, float fIsoBounds)
+void VideoSystem::SetCamera(const bool bIsometric, const Point3f* fPosition, const Point2f* fRotation, const float fIsoBounds)
 {
 	if (bIsometric) {
 		glMatrixMode(GL_PROJECTION);
@@ -200,7 +200,7 @@ void VideoSystem::SetupViewport()
  * Enable or disable multisampling for the GL context.
  * \param bEnable Enable or Disable.
  */
-void VideoSystem::SetMultisampling(bool bEnable)
+void VideoSystem::SetMultisampling(const bool bEnable)
 {
 	if (bEnable) {
 		glEnable(GL_MULTISAMPLE);
@@ -222,7 +222,7 @@ void VideoSystem::SetMultisampling(bool bEnable)
  * Enable or disable Vsync for the GL context.
  * \param bEnable Enable or Disable.
  */
-void VideoSystem::SetVsync(bool bEnable)
+void VideoSystem::SetVsync(const bool bEnable)
 {
 	bEnable ? SDL_GL_SetSwapInterval(1) : SDL_GL_SetSwapInterval(0);
 	this->m_bVsync = bEnable;
