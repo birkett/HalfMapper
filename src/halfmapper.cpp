@@ -49,6 +49,7 @@ HalfMapper::HalfMapper()
 HalfMapper::~HalfMapper()
 {
 	m_LoadedMaps.clear();
+	delete this->m_WadLoader;
 	delete this->m_VideoSystem;
 	delete this->m_XMLConfiguration;
 	delete this->m_fPosition;
@@ -101,8 +102,10 @@ int HalfMapper::Run(const int iArgc, char* szArgv[])
  */
 int HalfMapper::LoadTextures()
 {
+	this->m_WadLoader = new WadLoader();
+
 	for (size_t i = 0; i < this->m_XMLConfiguration->m_vWads.size(); i++) {
-		if (wadLoad(this->m_XMLConfiguration->m_szGamePaths, this->m_XMLConfiguration->m_vWads[i] + ".wad") != 0) {
+		if (this->m_WadLoader->LoadTexturesFromWAD(this->m_XMLConfiguration->m_szGamePaths, this->m_XMLConfiguration->m_vWads[i] + ".wad") != 0) {
 			return -1;
 		}
 	}
@@ -203,7 +206,7 @@ void HalfMapper::InputLoop()
 	if (m_fRotation->m_fX > 360) { m_fRotation->m_fX -= 360.0; }
 	if (m_fRotation->m_fX < 0  ) { m_fRotation->m_fX += 360.0; }
 	if (m_fRotation->m_fY < -89) { m_fRotation->m_fY  = -89;   }
-	if (m_fRotation->m_fX > 89 ) { m_fRotation->m_fY  = 89;    }
+	if (m_fRotation->m_fY > 89 ) { m_fRotation->m_fY  = 89;    }
 
 	// Calculate camera position.
 	if (this->m_XMLConfiguration->m_bIsometric) {

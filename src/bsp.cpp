@@ -121,88 +121,88 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 				
 				//Awful code. This and wad.cpp may be joined, they are pretty similar (except that these don't have color palettes)
 				
-				unsigned char *data0 = new unsigned char[bmt.nWidth*bmt.nHeight];
+				unsigned char *data0 = new unsigned char[bmt.iWidth*bmt.nHeight];
 				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i]+bmt.nOffsets[0], ios::beg);
-				inBSP.read((char*)data0, bmt.nWidth*bmt.nHeight);
+				inBSP.read((char*)data0, bmt.iWidth*bmt.nHeight);
 				
-				unsigned char *data1 = new unsigned char[bmt.nWidth*bmt.nHeight/4];
+				unsigned char *data1 = new unsigned char[bmt.iWidth*bmt.nHeight/4];
 				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i]+bmt.nOffsets[1], ios::beg);
-				inBSP.read((char*)data1, bmt.nWidth*bmt.nHeight/4);
+				inBSP.read((char*)data1, bmt.iWidth*bmt.nHeight/4);
 				
-				unsigned char *data2 = new unsigned char[bmt.nWidth*bmt.nHeight/16];
+				unsigned char *data2 = new unsigned char[bmt.iWidth*bmt.nHeight/16];
 				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i]+bmt.nOffsets[2], ios::beg);
-				inBSP.read((char*)data2, bmt.nWidth*bmt.nHeight/16);
+				inBSP.read((char*)data2, bmt.iWidth*bmt.nHeight/16);
 				
-				unsigned char *data3 = new unsigned char[bmt.nWidth*bmt.nHeight/64];
+				unsigned char *data3 = new unsigned char[bmt.iWidth*bmt.nHeight/64];
 				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i]+bmt.nOffsets[3], ios::beg);
-				inBSP.read((char*)data3, bmt.nWidth*bmt.nHeight/64);
+				inBSP.read((char*)data3, bmt.iWidth*bmt.nHeight/64);
 				
 				short dummy; inBSP.read((char*)&dummy, 2);
 				
 				unsigned char *data4 = new unsigned char[256*3];
 				inBSP.read((char*)data4, 256*3);
 				
-				unsigned char *dataFinal0 = new unsigned char[bmt.nWidth*bmt.nHeight*4];
-				unsigned char *dataFinal1 = new unsigned char[bmt.nWidth*bmt.nHeight];
-				unsigned char *dataFinal2 = new unsigned char[bmt.nWidth*bmt.nHeight/4];
-				unsigned char *dataFinal3 = new unsigned char[bmt.nWidth*bmt.nHeight/16];
+				unsigned char *dataFinal0 = new unsigned char[bmt.iWidth*bmt.nHeight*4];
+				unsigned char *dataFinal1 = new unsigned char[bmt.iWidth*bmt.nHeight];
+				unsigned char *dataFinal2 = new unsigned char[bmt.iWidth*bmt.nHeight/4];
+				unsigned char *dataFinal3 = new unsigned char[bmt.iWidth*bmt.nHeight/16];
 				
 				for(unsigned int y=0;y<bmt.nHeight;y++)
-				for(unsigned int x=0;x<bmt.nWidth;x++){
-					dataFinal0[(x+y*bmt.nWidth)*4] = data4[data0[y*bmt.nWidth+x]*3];
-					dataFinal0[(x+y*bmt.nWidth)*4+1] = data4[data0[y*bmt.nWidth+x]*3+1];
-					dataFinal0[(x+y*bmt.nWidth)*4+2] = data4[data0[y*bmt.nWidth+x]*3+2];
+				for(unsigned int x=0;x<bmt.iWidth;x++){
+					dataFinal0[(x+y*bmt.iWidth)*4] = data4[data0[y*bmt.iWidth+x]*3];
+					dataFinal0[(x+y*bmt.iWidth)*4+1] = data4[data0[y*bmt.iWidth+x]*3+1];
+					dataFinal0[(x+y*bmt.iWidth)*4+2] = data4[data0[y*bmt.iWidth+x]*3+2];
 					
-					if(dataFinal0[(x+y*bmt.nWidth)*4] == 0 && dataFinal0[(x+y*bmt.nWidth)*4+1] == 0 && dataFinal0[(x+y*bmt.nWidth)*4+2] == 255)
-						dataFinal0[(x+y*bmt.nWidth)*4+3] = dataFinal0[(x+y*bmt.nWidth)*4+2] = dataFinal0[(x+y*bmt.nWidth)*4+1] = dataFinal0[(x+y*bmt.nWidth)*4+0] = 0;
+					if(dataFinal0[(x+y*bmt.iWidth)*4] == 0 && dataFinal0[(x+y*bmt.iWidth)*4+1] == 0 && dataFinal0[(x+y*bmt.iWidth)*4+2] == 255)
+						dataFinal0[(x+y*bmt.iWidth)*4+3] = dataFinal0[(x+y*bmt.iWidth)*4+2] = dataFinal0[(x+y*bmt.iWidth)*4+1] = dataFinal0[(x+y*bmt.iWidth)*4+0] = 0;
 					else
-						dataFinal0[(x+y*bmt.nWidth)*4+3] = 255;
+						dataFinal0[(x+y*bmt.iWidth)*4+3] = 255;
 				}
 				for(unsigned int y=0;y<bmt.nHeight/2;y++)
-				for(unsigned int x=0;x<bmt.nWidth/2;x++){
-					dataFinal1[(x+y*bmt.nWidth/2)*4] = data4[data1[y*bmt.nWidth/2+x]*3];
-					dataFinal1[(x+y*bmt.nWidth/2)*4+1] = data4[data1[y*bmt.nWidth/2+x]*3+1];
-					dataFinal1[(x+y*bmt.nWidth/2)*4+2] = data4[data1[y*bmt.nWidth/2+x]*3+2];
+				for(unsigned int x=0;x<bmt.iWidth/2;x++){
+					dataFinal1[(x+y*bmt.iWidth/2)*4] = data4[data1[y*bmt.iWidth/2+x]*3];
+					dataFinal1[(x+y*bmt.iWidth/2)*4+1] = data4[data1[y*bmt.iWidth/2+x]*3+1];
+					dataFinal1[(x+y*bmt.iWidth/2)*4+2] = data4[data1[y*bmt.iWidth/2+x]*3+2];
 					
-					if(dataFinal1[(x+y*bmt.nWidth/2)*4] == 0 && dataFinal1[(x+y*bmt.nWidth/2)*4+1] == 0 && dataFinal1[(x+y*bmt.nWidth/2)*4+2] == 255)
-						dataFinal1[(x+y*bmt.nWidth/2)*4+3] = dataFinal1[(x+y*bmt.nWidth/2)*4+2] = dataFinal1[(x+y*bmt.nWidth/2)*4+1] = dataFinal1[(x+y*bmt.nWidth/2)*4+0] = 0;
+					if(dataFinal1[(x+y*bmt.iWidth/2)*4] == 0 && dataFinal1[(x+y*bmt.iWidth/2)*4+1] == 0 && dataFinal1[(x+y*bmt.iWidth/2)*4+2] == 255)
+						dataFinal1[(x+y*bmt.iWidth/2)*4+3] = dataFinal1[(x+y*bmt.iWidth/2)*4+2] = dataFinal1[(x+y*bmt.iWidth/2)*4+1] = dataFinal1[(x+y*bmt.iWidth/2)*4+0] = 0;
 					else
-						dataFinal1[(x+y*bmt.nWidth/2)*4+3] = 255;
+						dataFinal1[(x+y*bmt.iWidth/2)*4+3] = 255;
 				}
 				for(unsigned int y=0;y<bmt.nHeight/4;y++)
-				for(unsigned int x=0;x<bmt.nWidth/4;x++){
-					dataFinal2[(x+y*bmt.nWidth/4)*4] = data4[data2[y*bmt.nWidth/4+x]*3];
-					dataFinal2[(x+y*bmt.nWidth/4)*4+1] = data4[data2[y*bmt.nWidth/4+x]*3+1];
-					dataFinal2[(x+y*bmt.nWidth/4)*4+2] = data4[data2[y*bmt.nWidth/4+x]*3+2];
+				for(unsigned int x=0;x<bmt.iWidth/4;x++){
+					dataFinal2[(x+y*bmt.iWidth/4)*4] = data4[data2[y*bmt.iWidth/4+x]*3];
+					dataFinal2[(x+y*bmt.iWidth/4)*4+1] = data4[data2[y*bmt.iWidth/4+x]*3+1];
+					dataFinal2[(x+y*bmt.iWidth/4)*4+2] = data4[data2[y*bmt.iWidth/4+x]*3+2];
 					
-					if(dataFinal2[(x+y*bmt.nWidth/4)*4] == 0 && dataFinal2[(x+y*bmt.nWidth/4)*4+1] == 0 && dataFinal2[(x+y*bmt.nWidth/4)*4+2] == 255)
-						dataFinal2[(x+y*bmt.nWidth/4)*4+3] = dataFinal2[(x+y*bmt.nWidth/4)*4+2] = dataFinal2[(x+y*bmt.nWidth/4)*4+1] = dataFinal2[(x+y*bmt.nWidth/4)*4+0] = 0;
+					if(dataFinal2[(x+y*bmt.iWidth/4)*4] == 0 && dataFinal2[(x+y*bmt.iWidth/4)*4+1] == 0 && dataFinal2[(x+y*bmt.iWidth/4)*4+2] == 255)
+						dataFinal2[(x+y*bmt.iWidth/4)*4+3] = dataFinal2[(x+y*bmt.iWidth/4)*4+2] = dataFinal2[(x+y*bmt.iWidth/4)*4+1] = dataFinal2[(x+y*bmt.iWidth/4)*4+0] = 0;
 					else
-						dataFinal2[(x+y*bmt.nWidth/4)*4+3] = 255;
+						dataFinal2[(x+y*bmt.iWidth/4)*4+3] = 255;
 				}
 				for(unsigned int y=0;y<bmt.nHeight/8;y++)
-				for(unsigned int x=0;x<bmt.nWidth/8;x++){
-					dataFinal3[(x+y*bmt.nWidth/8)*4] = data4[data3[y*bmt.nWidth/8+x]*3];
-					dataFinal3[(x+y*bmt.nWidth/8)*4+1] = data4[data3[y*bmt.nWidth/8+x]*3+1];
-					dataFinal3[(x+y*bmt.nWidth/8)*4+2] = data4[data3[y*bmt.nWidth/8+x]*3+2];
+				for(unsigned int x=0;x<bmt.iWidth/8;x++){
+					dataFinal3[(x+y*bmt.iWidth/8)*4] = data4[data3[y*bmt.iWidth/8+x]*3];
+					dataFinal3[(x+y*bmt.iWidth/8)*4+1] = data4[data3[y*bmt.iWidth/8+x]*3+1];
+					dataFinal3[(x+y*bmt.iWidth/8)*4+2] = data4[data3[y*bmt.iWidth/8+x]*3+2];
 					
-					if(dataFinal3[(x+y*bmt.nWidth/8)*4] == 0 && dataFinal3[(x+y*bmt.nWidth/8)*4+1] == 0 && dataFinal3[(x+y*bmt.nWidth/8)*4+2] == 255)
-						dataFinal3[(x+y*bmt.nWidth/8)*4+3] = dataFinal3[(x+y*bmt.nWidth/8)*4+2] = dataFinal3[(x+y*bmt.nWidth/8)*4+1] = dataFinal3[(x+y*bmt.nWidth/8)*4+0] = 0;
+					if(dataFinal3[(x+y*bmt.iWidth/8)*4] == 0 && dataFinal3[(x+y*bmt.iWidth/8)*4+1] == 0 && dataFinal3[(x+y*bmt.iWidth/8)*4+2] == 255)
+						dataFinal3[(x+y*bmt.iWidth/8)*4+3] = dataFinal3[(x+y*bmt.iWidth/8)*4+2] = dataFinal3[(x+y*bmt.iWidth/8)*4+1] = dataFinal3[(x+y*bmt.iWidth/8)*4+0] = 0;
 					else
-						dataFinal3[(x+y*bmt.nWidth/8)*4+3] = 255;
+						dataFinal3[(x+y*bmt.iWidth/8)*4+3] = 255;
 				}
 				
 				TEXTURE n;
-				n.w = bmt.nWidth; n.h = bmt.nHeight;
+				n.w = bmt.iWidth; n.h = bmt.nHeight;
 				glGenTextures(1, &n.texId);		
 				glBindTexture(GL_TEXTURE_2D, n.texId);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmt.nWidth  , bmt.nHeight  , 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal0);
-				glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, bmt.nWidth/2, bmt.nHeight/2, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal1);
-				glTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA, bmt.nWidth/4, bmt.nHeight/4, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal2);
-				glTexImage2D(GL_TEXTURE_2D, 3, GL_RGBA, bmt.nWidth/8, bmt.nHeight/8, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal3);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmt.iWidth  , bmt.nHeight  , 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal0);
+				glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, bmt.iWidth/2, bmt.nHeight/2, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal1);
+				glTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA, bmt.iWidth/4, bmt.nHeight/4, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal2);
+				glTexImage2D(GL_TEXTURE_2D, 3, GL_RGBA, bmt.iWidth/8, bmt.nHeight/8, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal3);
 				textures[bmt.szName]=n;
 				
 				delete[] data0; delete[] data1; delete[] data2; delete[] data3; delete[] data4;

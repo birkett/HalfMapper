@@ -28,6 +28,7 @@
 // Forward declarations.
 class ConfigXML;
 class VideoSystem;
+class WadLoader;
 class BSP;
 
 
@@ -65,6 +66,8 @@ private:
 
 	ConfigXML*        m_XMLConfiguration; /** Loaded configuration data. */
 	VideoSystem*      m_VideoSystem;      /** Pointer to the video system */
+	WadLoader*        m_WadLoader;        /** Pointer to the texture loading system. */
+
 	std::vector<BSP*> m_LoadedMaps;       /** Vector of loaded maps. */
 
 	bool              m_bShouldQuit;      /** Set to true when a quit event is received. */
