@@ -98,7 +98,7 @@ private:
 	 */
 	bool IsValidWADHeader(const WadHeader &sHeader);
 
-	std::ifstream m_sWadFile;                         /** File stream to load the WAD. */
+	std::ifstream                  m_sWadFile;        /** File stream to load the WAD. */
 	std::map<std::string, Texture> m_vLoadedTextures; /** Map of loaded textures, accessible by name. */
 
 };//end TextureLoader

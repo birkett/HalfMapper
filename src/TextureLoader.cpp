@@ -27,8 +27,8 @@ TextureLoader::~TextureLoader()
  * \param szGamePaths A vector of gamepath strings.
  * \param szFilename  Filename to load.
  */
-int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const string &szFilename) {
-
+int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const string &szFilename)
+{
 	// Try to open the file from all known gamepaths.
 	for (size_t i = 0; i < szGamePaths.size(); i++) {
 		if (!this->m_sWadFile.is_open()) {
@@ -66,7 +66,7 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 		this->m_sWadFile.read((char*)&sTextureInfo, sizeof(TextureInfo));
 
 		// Only load if it's the first appearance of the texture.
-		if(textures.count(sTextureInfo.szName) == 0) {
+		if(this->m_vLoadedTextures.count(sTextureInfo.szName) == 0) {
 			Texture sTexture;
 			sTexture.iWidth = sTextureInfo.iWidth;
 			sTexture.iWidth = sTextureInfo.iHeight;

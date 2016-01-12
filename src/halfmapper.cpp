@@ -131,7 +131,7 @@ void HalfMapper::LoadMaps()
 			MapEntry sMapEntry = this->m_XMLConfiguration->m_vChapterEntries[i].m_vMapEntries[j];
 
 			if (sChapterEntry.m_bRender && sMapEntry.m_bRender) {
-				BSP *level = new BSP(this->m_XMLConfiguration->m_szGamePaths, "maps/" + sMapEntry.m_szName + ".bsp", sMapEntry);
+				BSP *level = new BSP(this->m_XMLConfiguration->m_szGamePaths, sMapEntry);
 				level->SetChapterOffset(sChapterEntry.m_fOffsetX, sChapterEntry.m_fOffsetY, sChapterEntry.m_fOffsetZ);
 				totalTris += level->totalTris;
 				this->m_LoadedMaps.push_back(level);

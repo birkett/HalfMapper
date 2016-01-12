@@ -133,24 +133,29 @@ struct TEXSTUFF{
 
 class BSP{
 	public:
-		BSP(const std::vector<std::string> &szGamePaths, const string &filename, const MapEntry &sMapEntry);
+		BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry);
 		void render();
 		int totalTris;
 		void SetChapterOffset(const float x, const float y, const float z);
 	private:
 		void calculateOffset();
+		void ParseEntities(const string &szEntitiesLump, const MapEntry &sMapEntry);
+		bool IsValidBSPHeader(BSPHEADER &sHeader);
+		void GenerateLightMaps();
 
-		unsigned char *lmapAtlas; unsigned int lmapTexId;
+		std::string m_szMapID;
+
+		unsigned char *lmapAtlas;
+		unsigned int lmapTexId;
+
+		std::vector<LMAP> lmaps;
 		map <string, TEXSTUFF > texturedTris;
 		unsigned int *bufObjects;
-		string mapId;
 		Vertex3f offset;
+
+		std::map<std::string, Texture> m_vLoadedTextures;
 
 		Vertex3f ConfigOffsetChapter;
 };
-
-extern map <string, Texture> textures;
-extern map <string, vector<pair<Vertex3f,string> > > landmarks;
-extern map <string, vector<string> > dontRenderModel;
 
 #endif
