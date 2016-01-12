@@ -135,11 +135,12 @@ struct TEXSTUFF{
 class BSP{
 	public:
 		BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry);
-		void render();
+		void Render();
 		int totalTris;
 		void SetChapterOffset(const float x, const float y, const float z);
+
 	private:
-		void calculateOffset();
+		void CalculateOffset();
 		void ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry);
 		bool IsValidBSPHeader(const BSPHeader &sHeader);
 		void LoadFacesAndLightMaps(const BSPHeader &sHeader);
@@ -160,7 +161,6 @@ class BSP{
 		std::vector<LMAP> lmaps;
 		map <string, TEXSTUFF > texturedTris;
 		unsigned int *bufObjects;
-		Vertex3f offset;
 		BSPTEXTUREINFO *m_btfs;
 		float *minUV;
 		float *maxUV;
@@ -171,7 +171,6 @@ class BSP{
 		std::map<std::string, std::vector<std::string> > m_vDontRenderModel;
 		std::map<int, bool> m_vDontRenderFace;
 		std::vector<Vertex3f> m_vVerticesPrime;
-		
 
 		Vertex3f ConfigOffsetChapter;
 };

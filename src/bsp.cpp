@@ -8,9 +8,10 @@
 #include "ConfigXML.h"
 #include "TextureLoader.h"
 
-
+// These are global for now - needed so maps can know eachothers position.
 std::map<std::string, Vertex3f> offsets;
-std::map<std::string, std::vector<std::pair<Vertex3f, std::string>>> m_vLandmarks;
+std::map<std::string, std::vector<std::pair<Vertex3f, std::string>>> vLandmarks;
+
 
 //Correct UV coordinates
 static inline COORDS calcCoords(Vertex3f v, Vertex3f vs, Vertex3f vt, float sShift, float tShift){
@@ -77,6 +78,9 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry)
 
 	this->m_sBSPFile.close();
 	
+	// Calculate map offset based on landmarks.
+	this->CalculateOffset();
+
 	bufObjects = new GLuint[texturedTris.size()];
 	glGenBuffers(texturedTris.size(), bufObjects);
 	
@@ -90,69 +94,58 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry)
 }
 
 
-void BSP::calculateOffset(){
-	if(offsets.count(this->m_szMapID) != 0) {
-		offset = offsets[this->m_szMapID];
-	}
-	else {
-		if(this->m_szMapID == "c0a0") {
-			// Origin for other maps.
-			offsets[this->m_szMapID] = Vertex3f(0, 0, 0);
-		}
-		else {
-			float ox=0, oy=0, oz=0;
-			bool found = false;
+void BSP::CalculateOffset()
+{
+	float ox=0, oy=0, oz=0;
+	bool found = false;
 
-			for (std::map<std::string, std::vector<std::pair<Vertex3f, std::string>>>::iterator it = m_vLandmarks.begin(); it != m_vLandmarks.end(); it++) {
-				if ((*it).second.size() > 1) {
-					for (size_t i = 0; i < (*it).second.size(); i++) {
-						if( (*it).second[i].second == this->m_szMapID) {
-							if (i == 0) {
-								if (offsets.count((*it).second[i+1].second) != 0) {
-									Vertex3f c1 = (*it).second[i].first;
-									Vertex3f c2 = (*it).second[i+1].first;
-									Vertex3f c3 = offsets[(*it).second[i+1].second];
-									ox = + c2.x + c3.x - c1.x;
-									oy = + c2.y + c3.y - c1.y;
-									oz = + c2.z + c3.z - c1.z;
+	for (std::map<std::string, std::vector<std::pair<Vertex3f, std::string>>>::iterator it = vLandmarks.begin(); it != vLandmarks.end(); it++) {
+		if ((*it).second.size() > 1) {
+			for (size_t i = 0; i < (*it).second.size(); i++) {
+				if( (*it).second[i].second == this->m_szMapID) {
+					if (i == 0) {
+						if (offsets.count((*it).second[i+1].second) != 0) {
+							Vertex3f c1 = (*it).second[i].first;
+							Vertex3f c2 = (*it).second[i+1].first;
+							Vertex3f c3 = offsets[(*it).second[i+1].second];
+							ox = + c2.x + c3.x - c1.x;
+							oy = + c2.y + c3.y - c1.y;
+							oz = + c2.z + c3.z - c1.z;
 									
-									found = true;
-									std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i+1].second << std::endl;
-									break;
-								}
-							}
-							else {
-								if (offsets.count((*it).second[i-1].second) != 0) {
-									Vertex3f c1 = (*it).second[i].first;
-									Vertex3f c2 = (*it).second[i-1].first;
-									Vertex3f c3 = offsets[(*it).second[i-1].second];
-									ox = + c2.x + c3.x - c1.x;
-									oy = + c2.y + c3.y - c1.y;
-									oz = + c2.z + c3.z - c1.z;
+							found = true;
+							std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i+1].second << std::endl;
+							break;
+						}
+					}
+					else {
+						if (offsets.count((*it).second[i-1].second) != 0) {
+							Vertex3f c1 = (*it).second[i].first;
+							Vertex3f c2 = (*it).second[i-1].first;
+							Vertex3f c3 = offsets[(*it).second[i-1].second];
+							ox = + c2.x + c3.x - c1.x;
+							oy = + c2.y + c3.y - c1.y;
+							oz = + c2.z + c3.z - c1.z;
 									
-									found = true;
-									std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i-1].second << std::endl;
-									break;
-								}
-							}
+							found = true;
+							std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i-1].second << std::endl;
+							break;
 						}
 					}
 				}
 			}
-			if (!found) {
-				std::cout << "Cant find matching landmarks for " << this->m_szMapID << std::endl;  
-			}
-			offsets[this->m_szMapID] = Vertex3f(ox, oy, oz);
 		}
 	}
+	if (!found) {
+		std::cout << "Cant find matching landmarks for " << this->m_szMapID << std::endl;  
+	}
+	offsets[this->m_szMapID] = Vertex3f(ox, oy, oz);
 }
 
-void BSP::render(){
-	// Calculate map offset based on landmarks.
-	calculateOffset();
-	
+
+void BSP::Render()
+{
 	glPushMatrix();
-	glTranslatef(offset.x + ConfigOffsetChapter.x, offset.y + ConfigOffsetChapter.y, offset.z + ConfigOffsetChapter.z);
+	glTranslatef(offsets[this->m_szMapID].x + ConfigOffsetChapter.x, offsets[this->m_szMapID].y + ConfigOffsetChapter.y, offsets[this->m_szMapID].z + ConfigOffsetChapter.z);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -309,7 +302,7 @@ void BSP::ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry)
 
 	for (std::map<std::string, Vertex3f>::iterator it = ret.begin(); it != ret.end(); it++) {
 		if (changelevels.count((*it).first) != 0) {
-			m_vLandmarks[(*it).first].push_back(make_pair((*it).second, this->m_szMapID));
+			vLandmarks[(*it).first].push_back(make_pair((*it).second, this->m_szMapID));
 		}
 	}
 

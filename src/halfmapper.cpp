@@ -241,7 +241,7 @@ void HalfMapper::MainLoop()
 
 		// Render each loaded map.
 		for (size_t i = 0; i < this->m_LoadedMaps.size(); i++) {
-			this->m_LoadedMaps[i]->render();
+			this->m_LoadedMaps[i]->Render();
 		}
 
 		this->m_VideoSystem->SwapBuffers();
