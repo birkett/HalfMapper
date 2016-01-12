@@ -43,17 +43,17 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 	}
 	
 	// Read header.
-	WadHeader sWadHeader; this->m_sWadFile.read((char*)&sWadHeader, sizeof(WadHeader));
+	WADHeader sWadHeader; this->m_sWadFile.read((char*)&sWadHeader, sizeof(WADHeader));
 
 	if (!this->IsValidWADHeader(sWadHeader)) {
 		return -1;
 	}
 	
 	// Read directory entries.
-	WadEntry *sWadEntry = new WadEntry[sWadHeader.iLumpCount];
+	WADEntry *sWadEntry = new WADEntry[sWadHeader.iLumpCount];
 
 	this->m_sWadFile.seekg(sWadHeader.iLumpOffset, ios::beg);		
-	this->m_sWadFile.read((char*)sWadEntry, sizeof(WadEntry) * sWadHeader.iLumpCount);
+	this->m_sWadFile.read((char*)sWadEntry, sizeof(WADEntry) * sWadHeader.iLumpCount);
 	
 	uint8_t *dataDr  = new uint8_t[512*512];   // Raw texture data.
 	uint8_t *dataUp  = new uint8_t[512*512*4]; // 32 bit texture.
@@ -135,7 +135,7 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
  * Check if a loaded WAD header is valid.
  * \param sHeader Loaded WAD header structure.
  */
-bool TextureLoader::IsValidWADHeader(const WadHeader &sHeader)
+bool TextureLoader::IsValidWADHeader(const WADHeader &sHeader)
 {
 	if (   sHeader.szMagic[0] != 'W'
 		|| sHeader.szMagic[1] != 'A'

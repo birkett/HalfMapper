@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -64,7 +65,7 @@ struct BSPLUMP{
 	int32_t nOffset; // File offset to data
 	int32_t nLength; // Length of data
 };
-struct BSPHEADER{
+struct BSPHeader{
 	int32_t nVersion;           // Must be 30 for a valid HL BSP file
 	BSPLUMP lump[HEADER_LUMPS]; // Stores the directory of lumps
 };
@@ -139,9 +140,17 @@ class BSP{
 		void SetChapterOffset(const float x, const float y, const float z);
 	private:
 		void calculateOffset();
-		void ParseEntities(const string &szEntitiesLump, const MapEntry &sMapEntry);
-		bool IsValidBSPHeader(BSPHEADER &sHeader);
+		void ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry);
+		bool IsValidBSPHeader(const BSPHeader &sHeader);
+		void LoadFacesAndLightMaps(const BSPHeader &sHeader);
 		void GenerateLightMaps();
+		void LoadModels(const BSPHeader &sHeader);
+		void LoadSurfEdges(const BSPHeader &sHeader);
+		void LoadTextures(const BSPHeader &sHeader);
+		void LoadTris(const BSPHeader &sHeader);
+
+
+		std::ifstream m_sBSPFile;
 
 		std::string m_szMapID;
 
@@ -152,8 +161,17 @@ class BSP{
 		map <string, TEXSTUFF > texturedTris;
 		unsigned int *bufObjects;
 		Vertex3f offset;
+		BSPTEXTUREINFO *m_btfs;
+		float *minUV;
+		float *maxUV;
+		uint8_t *lmap;
 
 		std::map<std::string, Texture> m_vLoadedTextures;
+		std::vector<std::string> m_vTexNames;
+		std::map<std::string, std::vector<std::string> > m_vDontRenderModel;
+		std::map<int, bool> m_vDontRenderFace;
+		std::vector<Vertex3f> m_vVerticesPrime;
+		
 
 		Vertex3f ConfigOffsetChapter;
 };

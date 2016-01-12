@@ -34,7 +34,7 @@
 /**
  * First 12 bytes of a WAD are the header.
  */
-struct WadHeader
+struct WADHeader
 {
 	char     szMagic[4];  /** Magic signature (WAD2 or WAD3). */
 	uint32_t iLumpCount;  /** Number of lump entries. */
@@ -45,7 +45,7 @@ struct WadHeader
 /**
  * Each object in the WAD has a 32 byte entry after the WAD header.
  */
-struct WadEntry
+struct WADEntry
 {
 	uint32_t iOffset;      /** Object position in the WAD. */
 	uint32_t iDiskSize;    /** Object size in WAD. */
@@ -96,7 +96,7 @@ private:
 	 * Check if a loaded WAD header is valid.
 	 * \param sHeader Loaded WAD header structure.
 	 */
-	bool IsValidWADHeader(const WadHeader &sHeader);
+	bool IsValidWADHeader(const WADHeader &sHeader);
 
 	std::ifstream                  m_sWadFile;        /** File stream to load the WAD. */
 	std::map<std::string, Texture> m_vLoadedTextures; /** Map of loaded textures, accessible by name. */
