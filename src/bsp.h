@@ -29,6 +29,7 @@ using namespace std;
 #define MIPLEVELS 4
 
 struct MapEntry; // Dont include ConfigXML.h here.
+struct Texture;
 
 struct Vertex3f
 {
@@ -90,11 +91,6 @@ struct BSPTEXTUREINFO{
 struct BSPTEXTUREHEADER{
 	uint32_t nMipTextures; // Number of BSPMIPTEX structures
 };
-struct BSPMIPTEX{
-	char szName[MAXTEXTURENAME];  // Name of texture
-	uint32_t iWidth, nHeight;     // Extends of the texture
-	uint32_t nOffsets[MIPLEVELS]; // Offsets to texture mipmaps BSPMIPTEX;
-};
 
 #define MAX_MAP_HULLS 4
 struct BSPMODEL{
@@ -124,10 +120,7 @@ struct VECFINAL{
 		vl = c2.v;
 	}
 };
-struct TEXTURE{
-	unsigned int texId;
-	int w,h;
-};
+
 struct LMAP{
 	unsigned char *offset; int w,h;
 	int finalX, finalY;
@@ -156,7 +149,7 @@ class BSP{
 		Vertex3f ConfigOffsetChapter;
 };
 
-extern map <string, TEXTURE> textures;
+extern map <string, Texture> textures;
 extern map <string, vector<pair<Vertex3f,string> > > landmarks;
 extern map <string, vector<string> > dontRenderModel;
 

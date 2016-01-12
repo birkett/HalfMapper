@@ -63,11 +63,12 @@ struct WadEntry
  */
 #define MAXTEXTURENAME 16
 #define MIPLEVELS      4
-struct WadTextureInfo {
-	char szName[MAXTEXTURENAME];  /** Name of the texture. */
-	uint32_t iWidth;              /** Texture width. */
-	uint32_t iHeight;             /** Texture height. */
-	uint32_t iOffsets[MIPLEVELS]; /** Offsets to texture mipmaps. */
+struct TextureInfo
+{
+	char     szName[MAXTEXTURENAME]; /** Name of the texture. */
+	uint32_t iWidth;                 /** Texture width. */
+	uint32_t iHeight;                /** Texture height. */
+	uint32_t iOffsets[MIPLEVELS];    /** Offsets to texture mipmaps. */
 };//end WadTextureInfo
 
 

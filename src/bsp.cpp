@@ -6,9 +6,10 @@
 #include "bsp.h"
 #include "entities.h"
 #include "ConfigXML.h"
+#include "TextureLoader.h"
 
 
-map <string, TEXTURE> textures;
+map <string, Texture> textures;
 map <string, vector<pair<Vertex3f,string> > > landmarks;
 map <string, vector<string> > dontRenderModel;
 map <string, Vertex3f> offsets;
@@ -26,7 +27,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 
 	uint8_t gammaTable[256];
 	for(int i=0;i<256;i++)
-		gammaTable[i] = pow(i/255.0,1.0/3.0)*255;
+		gammaTable[i] = pow(i / 255.0, 1.0/3.0) * 255;
 
 	//Light map atlas
 	lmapAtlas = new uint8_t[1024*1024*3];
@@ -110,113 +111,83 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 	
 	vector <string> texNames;
 	
-	for(unsigned int i=0;i<theader.nMipTextures;i++){
+	uint8_t *dataDr  = new uint8_t[512 * 512];     // Raw texture data.
+	uint8_t *dataUp  = new uint8_t[512 * 512 * 4]; // 32 bit texture.
+	uint8_t *dataPal = new uint8_t[256 * 3];       // 256 color pallete.
+
+	for(unsigned int i = 0; i < theader.nMipTextures; i++) {
 		inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i], ios::beg);
 		
-		BSPMIPTEX bmt;
-		inBSP.read((char*)&bmt, sizeof(bmt));
-		if(textures.count(bmt.szName) == 0){ //First appearance of the texture
-			if(bmt.nOffsets[0] != 0 && bmt.nOffsets[1] != 0 && bmt.nOffsets[2] != 0 && bmt.nOffsets[3] != 0){
-				//Textures that are inside the BSP
-				
-				//Awful code. This and wad.cpp may be joined, they are pretty similar (except that these don't have color palettes)
-				
-				unsigned char *data0 = new unsigned char[bmt.iWidth*bmt.nHeight];
-				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i]+bmt.nOffsets[0], ios::beg);
-				inBSP.read((char*)data0, bmt.iWidth*bmt.nHeight);
-				
-				unsigned char *data1 = new unsigned char[bmt.iWidth*bmt.nHeight/4];
-				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i]+bmt.nOffsets[1], ios::beg);
-				inBSP.read((char*)data1, bmt.iWidth*bmt.nHeight/4);
-				
-				unsigned char *data2 = new unsigned char[bmt.iWidth*bmt.nHeight/16];
-				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i]+bmt.nOffsets[2], ios::beg);
-				inBSP.read((char*)data2, bmt.iWidth*bmt.nHeight/16);
-				
-				unsigned char *data3 = new unsigned char[bmt.iWidth*bmt.nHeight/64];
-				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset+texOffSets[i]+bmt.nOffsets[3], ios::beg);
-				inBSP.read((char*)data3, bmt.iWidth*bmt.nHeight/64);
-				
-				short dummy; inBSP.read((char*)&dummy, 2);
-				
-				unsigned char *data4 = new unsigned char[256*3];
-				inBSP.read((char*)data4, 256*3);
-				
-				unsigned char *dataFinal0 = new unsigned char[bmt.iWidth*bmt.nHeight*4];
-				unsigned char *dataFinal1 = new unsigned char[bmt.iWidth*bmt.nHeight];
-				unsigned char *dataFinal2 = new unsigned char[bmt.iWidth*bmt.nHeight/4];
-				unsigned char *dataFinal3 = new unsigned char[bmt.iWidth*bmt.nHeight/16];
-				
-				for(unsigned int y=0;y<bmt.nHeight;y++)
-				for(unsigned int x=0;x<bmt.iWidth;x++){
-					dataFinal0[(x+y*bmt.iWidth)*4] = data4[data0[y*bmt.iWidth+x]*3];
-					dataFinal0[(x+y*bmt.iWidth)*4+1] = data4[data0[y*bmt.iWidth+x]*3+1];
-					dataFinal0[(x+y*bmt.iWidth)*4+2] = data4[data0[y*bmt.iWidth+x]*3+2];
-					
-					if(dataFinal0[(x+y*bmt.iWidth)*4] == 0 && dataFinal0[(x+y*bmt.iWidth)*4+1] == 0 && dataFinal0[(x+y*bmt.iWidth)*4+2] == 255)
-						dataFinal0[(x+y*bmt.iWidth)*4+3] = dataFinal0[(x+y*bmt.iWidth)*4+2] = dataFinal0[(x+y*bmt.iWidth)*4+1] = dataFinal0[(x+y*bmt.iWidth)*4+0] = 0;
-					else
-						dataFinal0[(x+y*bmt.iWidth)*4+3] = 255;
+		TextureInfo sTextureInfo;
+		inBSP.read((char*)&sTextureInfo, sizeof(TextureInfo));
+
+		// First appearance of the texture.
+		if (textures.count(sTextureInfo.szName) == 0) {
+			Texture sTexture;
+			sTexture.iWidth = sTextureInfo.iWidth;
+			sTexture.iHeight = sTextureInfo.iHeight;
+
+			glGenTextures(1, &sTexture.iTextureId);
+			glBindTexture(GL_TEXTURE_2D, sTexture.iTextureId);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
+
+			// Sizes of each mipmap.
+			const int dimensionsSquared[4] = { 1,4,16,64 };
+			const int dimensions[4] = { 1,2,4,8 };
+
+			// Read each mipmap.
+			for (int mip = 3; mip >= 0; mip--) {
+				if (sTextureInfo.iOffsets[0] == 0 || sTextureInfo.iOffsets[1] == 0 || sTextureInfo.iOffsets[2] == 0 || sTextureInfo.iOffsets[3] == 0) {
+					std::cout << "Texture found, but no mipmaps. " << sTextureInfo.szName << std::endl;
+					break;
 				}
-				for(unsigned int y=0;y<bmt.nHeight/2;y++)
-				for(unsigned int x=0;x<bmt.iWidth/2;x++){
-					dataFinal1[(x+y*bmt.iWidth/2)*4] = data4[data1[y*bmt.iWidth/2+x]*3];
-					dataFinal1[(x+y*bmt.iWidth/2)*4+1] = data4[data1[y*bmt.iWidth/2+x]*3+1];
-					dataFinal1[(x+y*bmt.iWidth/2)*4+2] = data4[data1[y*bmt.iWidth/2+x]*3+2];
-					
-					if(dataFinal1[(x+y*bmt.iWidth/2)*4] == 0 && dataFinal1[(x+y*bmt.iWidth/2)*4+1] == 0 && dataFinal1[(x+y*bmt.iWidth/2)*4+2] == 255)
-						dataFinal1[(x+y*bmt.iWidth/2)*4+3] = dataFinal1[(x+y*bmt.iWidth/2)*4+2] = dataFinal1[(x+y*bmt.iWidth/2)*4+1] = dataFinal1[(x+y*bmt.iWidth/2)*4+0] = 0;
-					else
-						dataFinal1[(x+y*bmt.iWidth/2)*4+3] = 255;
+
+				inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset + texOffSets[i] + sTextureInfo.iOffsets[mip], ios::beg);
+				inBSP.read((char*)dataDr, sTextureInfo.iWidth * sTextureInfo.iHeight / dimensionsSquared[mip]);
+
+				if (mip == 3) {
+					// Read the pallete (comes after last mipmap).
+					uint16_t dummy;
+					inBSP.read((char*)&dummy, 2);
+					inBSP.read((char*)dataPal, 256 * 3);
 				}
-				for(unsigned int y=0;y<bmt.nHeight/4;y++)
-				for(unsigned int x=0;x<bmt.iWidth/4;x++){
-					dataFinal2[(x+y*bmt.iWidth/4)*4] = data4[data2[y*bmt.iWidth/4+x]*3];
-					dataFinal2[(x+y*bmt.iWidth/4)*4+1] = data4[data2[y*bmt.iWidth/4+x]*3+1];
-					dataFinal2[(x+y*bmt.iWidth/4)*4+2] = data4[data2[y*bmt.iWidth/4+x]*3+2];
-					
-					if(dataFinal2[(x+y*bmt.iWidth/4)*4] == 0 && dataFinal2[(x+y*bmt.iWidth/4)*4+1] == 0 && dataFinal2[(x+y*bmt.iWidth/4)*4+2] == 255)
-						dataFinal2[(x+y*bmt.iWidth/4)*4+3] = dataFinal2[(x+y*bmt.iWidth/4)*4+2] = dataFinal2[(x+y*bmt.iWidth/4)*4+1] = dataFinal2[(x+y*bmt.iWidth/4)*4+0] = 0;
-					else
-						dataFinal2[(x+y*bmt.iWidth/4)*4+3] = 255;
+
+				for (uint32_t y = 0; y < sTextureInfo.iHeight / dimensions[mip]; y++) {
+					for (uint32_t x = 0; x < sTextureInfo.iWidth / dimensions[mip]; x++) {
+						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4]     = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3];
+						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 1] = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3 + 1];
+						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 2] = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3 + 2];
+
+						// Do full transparency on blue pixels.
+						if (dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4] == 0
+							&& dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 1] == 0
+							&& dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 2] == 255
+							) {
+							dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 3] = 0;
+						}
+						else {
+							dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 3] = 255;
+						}
+					}
 				}
-				for(unsigned int y=0;y<bmt.nHeight/8;y++)
-				for(unsigned int x=0;x<bmt.iWidth/8;x++){
-					dataFinal3[(x+y*bmt.iWidth/8)*4] = data4[data3[y*bmt.iWidth/8+x]*3];
-					dataFinal3[(x+y*bmt.iWidth/8)*4+1] = data4[data3[y*bmt.iWidth/8+x]*3+1];
-					dataFinal3[(x+y*bmt.iWidth/8)*4+2] = data4[data3[y*bmt.iWidth/8+x]*3+2];
-					
-					if(dataFinal3[(x+y*bmt.iWidth/8)*4] == 0 && dataFinal3[(x+y*bmt.iWidth/8)*4+1] == 0 && dataFinal3[(x+y*bmt.iWidth/8)*4+2] == 255)
-						dataFinal3[(x+y*bmt.iWidth/8)*4+3] = dataFinal3[(x+y*bmt.iWidth/8)*4+2] = dataFinal3[(x+y*bmt.iWidth/8)*4+1] = dataFinal3[(x+y*bmt.iWidth/8)*4+0] = 0;
-					else
-						dataFinal3[(x+y*bmt.iWidth/8)*4+3] = 255;
-				}
-				
-				TEXTURE n;
-				n.w = bmt.iWidth; n.h = bmt.nHeight;
-				glGenTextures(1, &n.texId);		
-				glBindTexture(GL_TEXTURE_2D, n.texId);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmt.iWidth  , bmt.nHeight  , 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal0);
-				glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, bmt.iWidth/2, bmt.nHeight/2, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal1);
-				glTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA, bmt.iWidth/4, bmt.nHeight/4, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal2);
-				glTexImage2D(GL_TEXTURE_2D, 3, GL_RGBA, bmt.iWidth/8, bmt.nHeight/8, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataFinal3);
-				textures[bmt.szName]=n;
-				
-				delete[] data0; delete[] data1; delete[] data2; delete[] data3; delete[] data4;
-				delete[] dataFinal0; delete[] dataFinal1; delete[] dataFinal2; delete[] dataFinal3;
-				
-			}else{
-				TEXTURE n;
-				n.texId = 0;
-				n.w = 1;
-				n.h = 1;
-				textures[bmt.szName]=n;
+
+				glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA, sTextureInfo.iWidth / dimensions[mip], sTextureInfo.iHeight / dimensions[mip], 0, GL_RGBA, GL_UNSIGNED_BYTE, dataUp);
 			}
+
+			textures[sTextureInfo.szName]=sTexture;
+			
+			/* If mipmap offsets = 0
+			Create new texture in its place with dummy values.
+				Texture n;
+				n.iTextureId = 0;
+				n.iWidth = 1;
+				n.iHeight = 1;
+				textures[sTextureInfo.szName]=n;
+			*/
 		}
-		texNames.push_back(bmt.szName);
+		texNames.push_back(sTextureInfo.szName);
 	}
 	
 	//Read Texture information
@@ -332,7 +303,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 		float mid_tex_t = (float)lmh / 2.0f;
 		float fX = lmaps[i].finalX;
 		float fY = lmaps[i].finalY;
-		TEXTURE t = textures[faceTexName];
+		Texture t = textures[faceTexName];
 		
 		vector <VECFINAL>*vt = &texturedTris[faceTexName].triangles;
 		
@@ -357,8 +328,8 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 			c1l.u /= 1024.0; c2l.u /= 1024.0; c3l.u /= 1024.0;
 			c1l.v /= 1024.0; c2l.v /= 1024.0; c3l.v /= 1024.0;
 			
-			c1.u /= t.w; c2.u /= t.w; c3.u /= t.w;
-			c1.v /= t.h; c2.v /= t.h; c3.v /= t.h;
+			c1.u /= t.iWidth; c2.u /= t.iWidth; c3.u /= t.iWidth;
+			c1.v /= t.iHeight; c2.v /= t.iHeight; c3.v /= t.iHeight;
 			
 			v1.FixHand();
 			v2.FixHand();
@@ -368,7 +339,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const string &filename, co
 			vt->push_back(VECFINAL(v2,c2,c2l));
 			vt->push_back(VECFINAL(v3,c3,c3l));
 		}
-		texturedTris[faceTexName].texId = textures[faceTexName].texId;
+		texturedTris[faceTexName].texId = textures[faceTexName].iTextureId;
 	}
 
 	

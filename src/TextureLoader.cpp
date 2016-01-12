@@ -62,13 +62,15 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 	for(unsigned int i = 0; i < sWadHeader.iLumpCount; i++) {
 		this->m_sWadFile.seekg(sWadEntry[i].iOffset, ios::beg);
 
-		WadTextureInfo sWadTextureInfo;
-		this->m_sWadFile.read((char*)&sWadTextureInfo, sizeof(sWadTextureInfo));
+		TextureInfo sTextureInfo;
+		this->m_sWadFile.read((char*)&sTextureInfo, sizeof(TextureInfo));
 
 		// Only load if it's the first appearance of the texture.
-		if(textures.count(sWadTextureInfo.szName) == 0) {
+		if(textures.count(sTextureInfo.szName) == 0) {
 			Texture sTexture;
-			sTexture.iWidth = sWadTextureInfo.iWidth; sTexture.iWidth = sWadTextureInfo.iHeight;
+			sTexture.iWidth = sTextureInfo.iWidth;
+			sTexture.iWidth = sTextureInfo.iHeight;
+
 			glGenTextures(1, &sTexture.iTextureId);		
 			glBindTexture(GL_TEXTURE_2D, sTexture.iTextureId);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -81,8 +83,13 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 			
 			// Read each mipmap.
 			for(int mip = 3; mip >= 0; mip--) {
-				this->m_sWadFile.seekg(sWadEntry[i].iOffset + sWadTextureInfo.iOffsets[mip], ios::beg);
-				this->m_sWadFile.read((char*)dataDr, sWadTextureInfo.iWidth * sWadTextureInfo.iHeight / dimensionsSquared[mip]);
+				if (sTextureInfo.iOffsets[0] == 0 || sTextureInfo.iOffsets[1] == 0 || sTextureInfo.iOffsets[2] == 0 || sTextureInfo.iOffsets[3] == 0) {
+					std::cout << "Texture found, but no mipmaps. " << sTextureInfo.szName << std::endl;
+					break;
+				}
+
+				this->m_sWadFile.seekg(sWadEntry[i].iOffset + sTextureInfo.iOffsets[mip], ios::beg);
+				this->m_sWadFile.read((char*)dataDr, sTextureInfo.iWidth * sTextureInfo.iHeight / dimensionsSquared[mip]);
 			
 				if(mip == 3) {
 					// Read the pallete (comes after last mipmap).
@@ -91,29 +98,29 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 					this->m_sWadFile.read((char*)dataPal, 256 * 3);
 				}
 				
-				for (uint32_t y = 0; y < sWadTextureInfo.iHeight / dimensions[mip]; y++) {
-					for (uint32_t x = 0; x < sWadTextureInfo.iWidth / dimensions[mip]; x++) {
-						dataUp[(x + y * sWadTextureInfo.iWidth / dimensions[mip]) * 4]     = dataPal[dataDr[y * sWadTextureInfo.iWidth / dimensions[mip] + x] * 3];
-						dataUp[(x + y * sWadTextureInfo.iWidth / dimensions[mip]) * 4 + 1] = dataPal[dataDr[y * sWadTextureInfo.iWidth / dimensions[mip] + x] * 3 + 1];
-						dataUp[(x + y * sWadTextureInfo.iWidth / dimensions[mip]) * 4 + 2] = dataPal[dataDr[y * sWadTextureInfo.iWidth / dimensions[mip] + x] * 3 + 2];
+				for (uint32_t y = 0; y < sTextureInfo.iHeight / dimensions[mip]; y++) {
+					for (uint32_t x = 0; x < sTextureInfo.iWidth / dimensions[mip]; x++) {
+						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4]     = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3];
+						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 1] = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3 + 1];
+						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 2] = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3 + 2];
 
 						// Do full transparency on blue pixels.
-						if (   dataUp[(x + y * sWadTextureInfo.iWidth / dimensions[mip]) * 4]     == 0
-							&& dataUp[(x + y * sWadTextureInfo.iWidth / dimensions[mip]) * 4 + 1] == 0
-							&& dataUp[(x + y * sWadTextureInfo.iWidth / dimensions[mip]) * 4 + 2] == 255
+						if (   dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4]     == 0
+							&& dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 1] == 0
+							&& dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 2] == 255
 						) {
-							dataUp[(x + y * sWadTextureInfo.iWidth / dimensions[mip]) * 4 + 3] = 0;
+							dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 3] = 0;
 						}
 						else {
-							dataUp[(x + y * sWadTextureInfo.iWidth / dimensions[mip]) * 4 + 3] = 255;
+							dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 3] = 255;
 						}
 					}
 				}
 				
-				glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA, sWadTextureInfo.iWidth / dimensions[mip], sWadTextureInfo.iHeight / dimensions[mip], 0, GL_RGBA, GL_UNSIGNED_BYTE, dataUp);
+				glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA, sTextureInfo.iWidth / dimensions[mip], sTextureInfo.iHeight / dimensions[mip], 0, GL_RGBA, GL_UNSIGNED_BYTE, dataUp);
 			}
 			
-			this->m_vLoadedTextures[sWadTextureInfo.szName] = sTexture;
+			this->m_vLoadedTextures[sTextureInfo.szName] = sTexture;
 		}
 	}
 	
