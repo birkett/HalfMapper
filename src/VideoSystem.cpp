@@ -1,7 +1,7 @@
 /*
  * halfmapper, a renderer for GoldSrc maps and chapters.
  *
- * Copyright(C) 2014  Gonzalo ¡vila "gzalo" Alterach
+ * Copyright(C) 2014  Gonzalo √Åvila "gzalo" Alterach
  * Copyright(C) 2015  Anthony "birkett" Birkett
  *
  * This file is part of halfmapper.
@@ -264,7 +264,7 @@ void VideoSystem::BeginFrame(const float &x, const float &y, const float &z, con
 
 	glActiveTextureARB(GL_TEXTURE1_ARB);
 	glEnable(GL_TEXTURE_2D);
-	
+
 	glBindTexture(GL_TEXTURE_2D, iTextureId);
 
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);

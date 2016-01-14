@@ -76,7 +76,7 @@ make
 
 
 ## OSX, *BSD, Solaris
-Completely untested. Should be similar to the Linux process. 
+Completely untested. Should be similar to the Linux process.
 XCode projects will be generated on OSX.
 
 ## Windows MinGW

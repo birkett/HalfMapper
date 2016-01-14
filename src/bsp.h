@@ -83,9 +83,9 @@ struct BSPEDGE{
 	uint16_t iVertex3f[2]; // Indices into Vertex3f array
 };
 struct BSPTEXTUREINFO{
-	Vertex3f vS; 
+	Vertex3f vS;
 	float fSShift;    // Texture shift in s direction
-	Vertex3f vT; 
+	Vertex3f vT;
 	float fTShift;    // Texture shift in t direction
 	uint32_t iMiptex; // Index into textures array
 	uint32_t nFlags;  // Texture flags, seem to always be 0
@@ -102,7 +102,7 @@ struct BSPMODEL{
     int32_t nVisLeafs;                 // ???
     int32_t iFirstFace, nFaces;        // Index and count into faces
 };
- 
+
 struct COORDS{
 	float u, v;
 };

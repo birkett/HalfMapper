@@ -1,7 +1,7 @@
 /*
  * halfmapper, a renderer for GoldSrc maps and chapters.
  *
- * Copyright(C) 2014  Gonzalo Ávila "gzalo" Alterach
+ * Copyright(C) 2014  Gonzalo Ãvila "gzalo" Alterach
  * Copyright(C) 2015  Anthony "birkett" Birkett
  *
  * This file is part of halfmapper.
@@ -64,7 +64,7 @@ ConfigXML::~ConfigXML()
 XMLError ConfigXML::LoadProgramConfig()
 {
 	XMLError eRetCode = this->m_xmlProgramConfig.LoadFile("config.xml");
-	
+
 	if (eRetCode != XML_SUCCESS) {
 		if (eRetCode == XML_ERROR_FILE_NOT_FOUND) {
 			this->WriteDefaultProgramConfig();
@@ -159,14 +159,14 @@ XMLError ConfigXML::LoadMapConfig(const char *szFilename)
 		wad = wad->NextSiblingElement("wad");
 	}
 
-	
+
 	XMLElement *chapter = rootNode->FirstChildElement("chapter");
 
 	if (chapter == nullptr) {
 		std::cout << "Malformed XML. No chapters found." << std::endl;
 		return XML_ERROR_FILE_READ_ERROR;
 	}
-	
+
 	while (chapter != nullptr) {
 		ChapterEntry sChapterEntry;
 		sChapterEntry.m_szName  = chapter->Attribute("name");
@@ -210,7 +210,7 @@ XMLError ConfigXML::LoadMapConfig(const char *szFilename)
 
 			map = map->NextSiblingElement("map");
 		}
-			
+
 		chapter = chapter->NextSiblingElement("chapter");
 		this->m_vChapterEntries.push_back(sChapterEntry);
 	}
@@ -227,7 +227,7 @@ XMLError ConfigXML::WriteDefaultProgramConfig()
 {
 	// Document root node.
 	XMLNode *rootNode = this->m_xmlProgramConfig.NewElement("config");
-	
+
 	// Window settings.
 	XMLElement *window = this->m_xmlProgramConfig.NewElement("window");
 	window->SetAttribute("width",         this->m_iWidth        );

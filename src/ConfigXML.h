@@ -1,7 +1,7 @@
 /*
  * halfmapper, a renderer for GoldSrc maps and chapters.
  *
- * Copyright(C) 2014  Gonzalo ¡vila "gzalo" Alterach
+ * Copyright(C) 2014  Gonzalo √Åvila "gzalo" Alterach
  * Copyright(C) 2015  Anthony "birkett" Birkett
  *
  * This file is part of halfmapper.
@@ -100,7 +100,7 @@ public:
 	/** Load the user config from config.xml */
 	XMLError LoadProgramConfig();
 
-	/** 
+	/**
 	 * Load a map config from a given file.
 	 * \param szFilename File to load from.
 	 */

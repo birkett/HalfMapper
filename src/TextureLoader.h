@@ -1,7 +1,7 @@
 /*
  * halfmapper, a renderer for GoldSrc maps and chapters.
  *
- * Copyright(C) 2014  Gonzalo ¡vila "gzalo" Alterach
+ * Copyright(C) 2014  Gonzalo √Åvila "gzalo" Alterach
  * Copyright(C) 2015  Anthony "birkett" Birkett
  *
  * This file is part of halfmapper.

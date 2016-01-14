@@ -16,7 +16,7 @@ std::map<std::string, std::vector<std::pair<Vertex3f, std::string>>> vLandmarks;
 //Correct UV coordinates
 static inline COORDS calcCoords(Vertex3f v, Vertex3f vs, Vertex3f vt, float sShift, float tShift){
 	COORDS ret;
-	ret.u = sShift + vs.x*v.x + vs.y*v.y + vs.z*v.z; 
+	ret.u = sShift + vs.x*v.x + vs.y*v.y + vs.z*v.z;
 	ret.v = tShift + vt.x*v.x + vt.y*v.y + vt.z*v.z;
 	return ret;
 }
@@ -46,7 +46,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 		std::cerr << "Can't open BSP " << this->m_szMapID << "." << std::endl;
 		return;
 	}
-	
+
 	// Check BSP version.
 	BSPHeader sHeader;
 	this->m_sBSPFile.read((char*)&sHeader, sizeof(sHeader));
@@ -57,19 +57,19 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 
 	// Read Entities.
 	this->ParseEntities(sHeader, sMapEntry);
-	
+
 	// Read Models and hide some faces.
 	this->LoadModels(sHeader);
 
 	// Load surfaces, edges and surfedges.
 	this->LoadSurfEdges(sHeader);
-	
+
 	// Read Lightmaps.
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_LIGHTING].nOffset, ios::beg);
 	int size = sHeader.lump[LUMP_LIGHTING].nLength;
 	lmap = new uint8_t[size];
 	this->m_sBSPFile.read((char*)lmap, size);
-	
+
 	// Read Textures.
 	this->LoadTextures(sHeader);
 
@@ -90,12 +90,12 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 	this->LoadTris(sHeader);
 
 	this->m_sBSPFile.close();
-	
+
 	// Calculate map offset based on landmarks.
 	this->CalculateOffset();
 
 	bufObjects = new unsigned int[texturedTris.size()];
-	
+
 	this->m_VideoSystem->CreateBuffer(texturedTris.size(), bufObjects);
 
 	int i = 0;
@@ -127,7 +127,7 @@ void BSP::CalculateOffset()
 							ox = + c2.x + c3.x - c1.x;
 							oy = + c2.y + c3.y - c1.y;
 							oz = + c2.z + c3.z - c1.z;
-									
+
 							found = true;
 							std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i+1].second << std::endl;
 							break;
@@ -141,7 +141,7 @@ void BSP::CalculateOffset()
 							ox = + c2.x + c3.x - c1.x;
 							oy = + c2.y + c3.y - c1.y;
 							oz = + c2.z + c3.z - c1.z;
-									
+
 							found = true;
 							std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i-1].second << std::endl;
 							break;
@@ -152,7 +152,7 @@ void BSP::CalculateOffset()
 		}
 	}
 	if (!found) {
-		std::cout << "Cant find matching landmarks for " << this->m_szMapID << std::endl;  
+		std::cout << "Cant find matching landmarks for " << this->m_szMapID << std::endl;
 	}
 	offsets[this->m_szMapID] = Vertex3f(ox, oy, oz);
 }
@@ -192,7 +192,7 @@ void BSP::SetChapterOffset(const float x, const float y, const float z)
 bool BSP::IsValidBSPHeader(const BSPHeader &sHeader)
 {
 	if (sHeader.nVersion != 30) {
-		std::cerr << "BSP version is not 30 (" << this->m_szMapID << ")." << std::endl; 
+		std::cerr << "BSP version is not 30 (" << this->m_szMapID << ")." << std::endl;
 		return false;
 	}
 
@@ -442,7 +442,7 @@ void BSP::LoadSurfEdges(const BSPHeader &sHeader)
 		vertices.push_back(v);
 	}
 
-	// Read Edges.	
+	// Read Edges.
 	BSPEDGE *edges = new BSPEDGE[sHeader.lump[LUMP_EDGES].nLength / (int)sizeof(BSPEDGE)];
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_EDGES].nOffset, ios::beg);
 	this->m_sBSPFile.read((char*)edges, sHeader.lump[LUMP_EDGES].nLength);

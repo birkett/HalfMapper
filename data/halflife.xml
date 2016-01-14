@@ -3,7 +3,7 @@
 		<wad>halflife</wad>
 		<wad>liquids</wad>
 	</wads>
-	
+
 	<chapter name="Black Mesa Inbound" render="0">
 		<map name="c0a0" />
 		<map name="c0a0a" />
@@ -12,7 +12,7 @@
 		<map name="c0a0d" />
 		<map name="c0a0e" />
 	</chapter>
-	
+
 	<chapter name="Anomalous Materials" render="0">
 		<map name="c1a0" render="1" />
 		<map name="c1a0d" render="1" />
@@ -20,7 +20,7 @@
 		<map name="c1a0b" render="1" />
 		<map name="c1a0e" render="1" />
 	</chapter>
-	
+
 	<chapter name="Unforseen Concequences" render="1">
 		<offset x="0" y="0" z="0"/>
 		<map name="c1a0c" render="1"/>
@@ -33,7 +33,7 @@
 		<map name="c1a1c" render="1"/>
 		<map name="c1a1d" render="1"/>
 	</chapter>
-	
+
 	<chapter name="Office Complex" render="0">
 		<map name="c1a2" />
 		<map name="c1a2a" />
