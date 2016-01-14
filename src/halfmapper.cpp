@@ -37,9 +37,6 @@ HalfMapper::HalfMapper()
 	this->m_bShouldQuit  = false;
 	this->m_fIsoBounds   = 1000.0;
 
-	this->m_fPosition = new Point3f();
-	this->m_fRotation = new Point2f();
-
 }//end HalfMapper::HalfMapper()
 
 
@@ -48,12 +45,14 @@ HalfMapper::HalfMapper()
  */
 HalfMapper::~HalfMapper()
 {
+	for (size_t i = 0; i < m_LoadedMaps.size(); i++) {
+		delete m_LoadedMaps[i];
+	}
+
 	m_LoadedMaps.clear();
 	delete this->m_TextureLoader;
 	delete this->m_VideoSystem;
 	delete this->m_XMLConfiguration;
-	delete this->m_fPosition;
-	delete this->m_fRotation;
 
 }//end HalfMapper::~HalfMapper()
 
@@ -105,7 +104,7 @@ int HalfMapper::LoadTextures()
 	this->m_TextureLoader = new TextureLoader();
 
 	for (size_t i = 0; i < this->m_XMLConfiguration->m_vWads.size(); i++) {
-		if (this->m_TextureLoader->LoadTexturesFromWAD(this->m_XMLConfiguration->m_szGamePaths, this->m_XMLConfiguration->m_vWads[i] + ".wad") != 0) {
+		if (this->m_TextureLoader->LoadTexturesFromWAD(this->m_XMLConfiguration->m_szGamePaths, this->m_XMLConfiguration->m_vWads[i] + ".wad", this->m_VideoSystem) != 0) {
 			return -1;
 		}
 	}
@@ -131,7 +130,7 @@ void HalfMapper::LoadMaps()
 			MapEntry sMapEntry = this->m_XMLConfiguration->m_vChapterEntries[i].m_vMapEntries[j];
 
 			if (sChapterEntry.m_bRender && sMapEntry.m_bRender) {
-				BSP *level = new BSP(this->m_XMLConfiguration->m_szGamePaths, sMapEntry);
+				BSP *level = new BSP(this->m_XMLConfiguration->m_szGamePaths, sMapEntry, this->m_VideoSystem);
 				level->SetChapterOffset(sChapterEntry.m_fOffsetX, sChapterEntry.m_fOffsetY, sChapterEntry.m_fOffsetZ);
 				totalTris += level->totalTris;
 				this->m_LoadedMaps.push_back(level);
@@ -176,10 +175,10 @@ void HalfMapper::InputLoop()
 	if (keystate[SDL_SCANCODE_LSHIFT]) { iSpeed = 32; }
 
 	if (keystate[SDL_SCANCODE_Q]) {
-		this->m_XMLConfiguration->m_bIsometric ? (this->m_fIsoBounds -= iSpeed * 10.0f) : (this->m_fPosition->m_fY -= iSpeed);
+		this->m_XMLConfiguration->m_bIsometric ? (this->m_fIsoBounds -= iSpeed * 10.0f) : (this->m_fPosition.m_fY -= iSpeed);
 	}
 	if (keystate[SDL_SCANCODE_E]) {
-		this->m_XMLConfiguration->m_bIsometric ? (this->m_fIsoBounds += iSpeed * 10.0f) : (this->m_fPosition->m_fY += iSpeed);
+		this->m_XMLConfiguration->m_bIsometric ? (this->m_fIsoBounds += iSpeed * 10.0f) : (this->m_fPosition.m_fY += iSpeed);
 	}
 
 	// Handle mouse movement and events.
@@ -196,29 +195,29 @@ void HalfMapper::InputLoop()
 				break;
 
 			case SDL_MOUSEMOTION:
-				m_fRotation->m_fX += event.motion.xrel / 15.0f;
-				m_fRotation->m_fY += event.motion.yrel / 15.0f;
+				m_fRotation.m_fX += event.motion.xrel / 15.0f;
+				m_fRotation.m_fY += event.motion.yrel / 15.0f;
 				break;
 		}//end switch(event.type)
 	}//end while
 
 	// Clamp mouse aim.
-	if (m_fRotation->m_fX > 360) { m_fRotation->m_fX -= 360.0; }
-	if (m_fRotation->m_fX < 0  ) { m_fRotation->m_fX += 360.0; }
-	if (m_fRotation->m_fY < -89) { m_fRotation->m_fY  = -89;   }
-	if (m_fRotation->m_fY > 89 ) { m_fRotation->m_fY  = 89;    }
+	if (m_fRotation.m_fX > 360) { m_fRotation.m_fX -= 360.0; }
+	if (m_fRotation.m_fX < 0  ) { m_fRotation.m_fX += 360.0; }
+	if (m_fRotation.m_fY < -89) { m_fRotation.m_fY  = -89;   }
+	if (m_fRotation.m_fY > 89 ) { m_fRotation.m_fY  = 89;    }
 
 	// Calculate camera position.
 	if (this->m_XMLConfiguration->m_bIsometric) {
-		m_fPosition->m_fZ += fLeft    * iSpeed;
-		m_fPosition->m_fY += fFrontal * iSpeed;
+		m_fPosition.m_fZ += fLeft    * iSpeed;
+		m_fPosition.m_fY += fFrontal * iSpeed;
 		m_fIsoBounds = max(10.0f, m_fIsoBounds);
 	}
 	else {
 		if (fFrontal || fLeft) {
-			float rotationF = this->m_fRotation->m_fX * (float)M_PI / 180.0f + atan2(fFrontal, fLeft);
-			m_fPosition->m_fX -= iSpeed * cos(rotationF);
-			m_fPosition->m_fZ -= iSpeed * sin(rotationF);
+			float rotationF = this->m_fRotation.m_fX * (float)M_PI / 180.0f + atan2(fFrontal, fLeft);
+			m_fPosition.m_fX -= iSpeed * cos(rotationF);
+			m_fPosition.m_fZ -= iSpeed * sin(rotationF);
 		}
 	}
 
@@ -254,7 +253,7 @@ void HalfMapper::MainLoop()
 			int iFrameDelta = SDL_GetTicks() - iFrameStartTime;
 			iFrameStartTime = SDL_GetTicks();
 			char bf[64];
-			sprintf(bf, "%.2f FPS - %.2f %.2f %.2f", 30000.0f / (float)iFrameDelta, this->m_fPosition->m_fX, this->m_fPosition->m_fY, this->m_fPosition->m_fZ);
+			sprintf(bf, "%.2f FPS - %.2f %.2f %.2f", 30000.0f / (float)iFrameDelta, this->m_fPosition.m_fX, this->m_fPosition.m_fY, this->m_fPosition.m_fZ);
 			this->m_VideoSystem->SetWindowTitle(bf);
 		}
 	}//end while
@@ -271,8 +270,12 @@ void HalfMapper::MainLoop()
  */
 int main(int argc, char** argv)
 {
-	HalfMapper application;
+	HalfMapper* application = new HalfMapper();
 
-	return application.Run(argc, argv);
+	int iRetCode = application->Run(argc, argv);
+
+	delete application;
+
+	return iRetCode;
 
 }//end main()

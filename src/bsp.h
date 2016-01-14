@@ -31,6 +31,7 @@ using namespace std;
 
 struct MapEntry; // Dont include ConfigXML.h here.
 struct Texture;
+class  VideoSystem;
 
 struct Vertex3f
 {
@@ -134,7 +135,8 @@ struct TEXSTUFF{
 
 class BSP{
 	public:
-		BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry);
+		BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry, VideoSystem* &videosystem);
+		~BSP();
 		void Render();
 		int totalTris;
 		void SetChapterOffset(const float x, const float y, const float z);
@@ -150,6 +152,7 @@ class BSP{
 		void LoadTextures(const BSPHeader &sHeader);
 		void LoadTris(const BSPHeader &sHeader);
 
+		VideoSystem* m_VideoSystem;
 
 		std::ifstream m_sBSPFile;
 

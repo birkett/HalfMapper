@@ -65,13 +65,65 @@ public:
 	 * \param fRotation  Angle of the camera.
 	 * \param fIsoBounds Orthographic boundaries.
 	 */
-	void SetCamera(const bool bIsometric, const Point3f* fPosition, const Point2f* fRotation, const float fIsoBounds);
+	void SetCamera(const bool bIsometric, const Point3f fPosition, const Point2f fRotation, const float fIsoBounds);
 
 	/**
 	 * Set the title of the program window.
 	 * \param szTitle New window title.
 	 */
 	void SetWindowTitle(const char *szTitle);
+
+	/**
+	 * Create a new texture in video memory, and return it's ID.
+	 * \param bIsLightmap Are we building a lightmap, or a normal mipmapped texture.
+	 */
+	unsigned int CreateTexture(const bool bIsLightmap);
+
+	/**
+	 * Generate a texture in video memory.
+	 * \param iMipLevel    Which scale of mipmap this texture is.
+	 * \param iWidth       Texture width.
+	 * \param iHeight      Texture height.
+	 * \param pixels       Raw pixel data.
+	 * \param bIsLightmap  Lightmaps are RGB, normal textures RGBA.
+	 */
+	void AddTexture(const unsigned int &iMipLevel, const unsigned int &iWidth, const unsigned int &iHeight, uint8_t* pixels, bool bIsLightmap);
+
+	/**
+	 * Create a new object buffer.
+	 * \param iBufferSize Total size of the buffer.
+	 * \param objects     Data.
+	 */
+	void CreateBuffer(const size_t &iBufferSize, unsigned int* objects);
+
+	/**
+	 * Add data to the created buffer.
+	 * \param objects   Buffer objects.
+	 * \param iDataSize Total size of the data to add.
+	 * \param data      Raw data.
+	 */
+	void AddDataToBuffer(const unsigned int objects, const size_t &iDataSize, const void* data);
+
+	/**
+	 * Begin a frame, by translating to the correct poisiton and setting the global lightmap.
+	 * \param x          X translation.
+	 * \param y          Y translation.
+	 * \param z          Z translation.
+	 * \param iTextureId Lightmap ID.
+	 */
+	void BeginFrame(const float &x, const float &y, const float &z, const unsigned int iTextureId);
+
+	/**
+	* Push data to be rendered.
+	* \param objects        Data points.
+	* \param iTextureId     Texture ID to use.
+	* \param iDataSize      Size of each data point.
+	* \param iDataArraySize Total size of the data array.
+	*/
+	void PushData(const unsigned int objects, const unsigned int iTextureId, const unsigned int iDataSize, const size_t iDataArraySize);
+
+	/** Finish a frame. */
+	void EndFrame();
 
 private:
 	/** Set the perspective of the viewport, and set some GL hints. */

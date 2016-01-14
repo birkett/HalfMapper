@@ -3,10 +3,10 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <GL/glew.h>
 #include "bsp.h"
 #include "ConfigXML.h"
 #include "TextureLoader.h"
+#include "VideoSystem.h"
 
 // These are global for now - needed so maps can know eachothers position.
 std::map<std::string, Vertex3f> offsets;
@@ -21,8 +21,18 @@ static inline COORDS calcCoords(Vertex3f v, Vertex3f vs, Vertex3f vt, float sShi
 	return ret;
 }
 
-BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry){
-	this->m_szMapID = sMapEntry.m_szName;
+BSP::~BSP()
+{
+	delete[] bufObjects;
+	delete[] minUV;
+	delete[] maxUV;
+	delete[] lmap;
+}
+
+
+BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry, VideoSystem* &videosystem){
+	this->m_szMapID     = sMapEntry.m_szName;
+	this->m_VideoSystem = videosystem;
 
 	// Try to open the file from all known gamepaths.
 	for (size_t i = 0; i < szGamePaths.size(); i++) {
@@ -32,7 +42,10 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry)
 	}
 
 	// If the BSP wasn't found in any of the gamepaths...
-	if(!this->m_sBSPFile.is_open()){ cerr << "Can't open BSP " << this->m_szMapID << "." << endl; return;}
+	if (!this->m_sBSPFile.is_open()) {
+		std::cerr << "Can't open BSP " << this->m_szMapID << "." << std::endl;
+		return;
+	}
 	
 	// Check BSP version.
 	BSPHeader sHeader;
@@ -81,14 +94,14 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry)
 	// Calculate map offset based on landmarks.
 	this->CalculateOffset();
 
-	bufObjects = new GLuint[texturedTris.size()];
-	glGenBuffers(texturedTris.size(), bufObjects);
+	bufObjects = new unsigned int[texturedTris.size()];
 	
+	this->m_VideoSystem->CreateBuffer(texturedTris.size(), bufObjects);
+
 	int i = 0;
 	totalTris = 0;
-	for(std::map<std::string, TEXSTUFF>::iterator it = texturedTris.begin(); it != texturedTris.end(); it++, i++){	
-		glBindBuffer(GL_ARRAY_BUFFER, bufObjects[i]);
-		glBufferData(GL_ARRAY_BUFFER, (*it).second.triangles.size() * sizeof(VECFINAL), (void*)&(*it).second.triangles[0], GL_STATIC_DRAW);
+	for(std::map<std::string, TEXSTUFF>::iterator it = texturedTris.begin(); it != texturedTris.end(); it++, i++) {
+		this->m_VideoSystem->AddDataToBuffer(bufObjects[i], (*it).second.triangles.size() * sizeof(VECFINAL), (void*)&(*it).second.triangles[0]);
 		totalTris += (*it).second.triangles.size();
 	}
 }
@@ -96,7 +109,10 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry)
 
 void BSP::CalculateOffset()
 {
-	float ox=0, oy=0, oz=0;
+	float ox = 0.0f;
+	float oy = 0.0f;
+	float oz = 0.0f;
+
 	bool found = false;
 
 	for (std::map<std::string, std::vector<std::pair<Vertex3f, std::string>>>::iterator it = vLandmarks.begin(); it != vLandmarks.end(); it++) {
@@ -144,23 +160,8 @@ void BSP::CalculateOffset()
 
 void BSP::Render()
 {
-	glPushMatrix();
-	glTranslatef(offsets[this->m_szMapID].x + ConfigOffsetChapter.x, offsets[this->m_szMapID].y + ConfigOffsetChapter.y, offsets[this->m_szMapID].z + ConfigOffsetChapter.z);
+	this->m_VideoSystem->BeginFrame(offsets[this->m_szMapID].x + ConfigOffsetChapter.x, offsets[this->m_szMapID].y + ConfigOffsetChapter.y, offsets[this->m_szMapID].z + ConfigOffsetChapter.z, lmapTexId);
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glActiveTextureARB(GL_TEXTURE0_ARB);
-	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	
-	glActiveTextureARB(GL_TEXTURE1_ARB); 
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, lmapTexId);
-
-	glClientActiveTextureARB(GL_TEXTURE1_ARB); 
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);	
-	
 	int i = 0;
 	for (std::map<std::string, TEXSTUFF>::iterator it = texturedTris.begin(); it != texturedTris.end(); it++, i++) {
 		// Don't render some dummy triangles (triggers and such).
@@ -171,26 +172,14 @@ void BSP::Render()
 			&& (*it).first[0]!='{'
 			&& (*it).second.triangles.size() != 0
 		) {
-			glBindBuffer(GL_ARRAY_BUFFER, bufObjects[i]);
-			
-			/////T0
-			glActiveTextureARB(GL_TEXTURE0_ARB);
-			glBindTexture(GL_TEXTURE_2D, (*it).second.texId);
-			
-			glClientActiveTextureARB(GL_TEXTURE0_ARB); 
-			glTexCoordPointer(2, GL_FLOAT, sizeof(VECFINAL), (char*)NULL + 4 * 3);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY); 
-			
-			////T1
-			glClientActiveTextureARB(GL_TEXTURE1_ARB); 
-			glTexCoordPointer(2, GL_FLOAT, sizeof(VECFINAL), (char*)NULL + 4 * 5);
-			
-			glVertexPointer(3, GL_FLOAT, sizeof(VECFINAL), (void*)0);
-			glDrawArrays(GL_TRIANGLES, 0, (*it).second.triangles.size());
+			this->m_VideoSystem->PushData(bufObjects[i], (*it).second.texId, sizeof(VECFINAL), (*it).second.triangles.size());
 		}
 	}
-	glPopMatrix();
+
+	this->m_VideoSystem->EndFrame();
+
 }
+
 
 void BSP::SetChapterOffset(const float x, const float y, const float z)
 {
@@ -417,11 +406,8 @@ void BSP::GenerateLightMaps()
 		}
 	}
 
-	glGenTextures(1, &lmapTexId);
-	glBindTexture(GL_TEXTURE_2D, lmapTexId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, lmapAtlas);
+	lmapTexId = this->m_VideoSystem->CreateTexture(true);
+	this->m_VideoSystem->AddTexture(0, 1024, 1024, lmapAtlas, true);
 
 	delete[] lmapAtlas;
 }
@@ -433,7 +419,6 @@ void BSP::LoadModels(const BSPHeader &sHeader)
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_MODELS].nOffset, ios::beg);
 	this->m_sBSPFile.read((char*)models, sHeader.lump[LUMP_MODELS].nLength);
 
-	
 	for (size_t i = 0; i < this->m_vDontRenderModel[this->m_szMapID].size(); i++) {
 		int modelId = atoi(this->m_vDontRenderModel[this->m_szMapID][i].substr(1).c_str());
 		int startingFace = models[modelId].iFirstFace;
@@ -441,6 +426,8 @@ void BSP::LoadModels(const BSPHeader &sHeader)
 			this->m_vDontRenderFace[j + startingFace] = true;
 		}
 	}
+
+	delete[] models;
 }
 
 
@@ -480,8 +467,8 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 	int *texOffSets = new int[theader.nMipTextures];
 	this->m_sBSPFile.read((char*)texOffSets, theader.nMipTextures * sizeof(int));
 
-	uint8_t *dataDr = new uint8_t[512 * 512];     // Raw texture data.
-	uint8_t *dataUp = new uint8_t[512 * 512 * 4]; // 32 bit texture.
+	uint8_t *dataDr  = new uint8_t[512 * 512];     // Raw texture data.
+	uint8_t *dataUp  = new uint8_t[512 * 512 * 4]; // 32 bit texture.
 	uint8_t *dataPal = new uint8_t[256 * 3];       // 256 color pallete.
 
 	for (unsigned int i = 0; i < theader.nMipTextures; i++) {
@@ -493,14 +480,9 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 		// First appearance of the texture.
 		if (this->m_vLoadedTextures.count(sTextureInfo.szName) == 0) {
 			Texture sTexture;
-			sTexture.iWidth = sTextureInfo.iWidth;
-			sTexture.iHeight = sTextureInfo.iHeight;
-
-			glGenTextures(1, &sTexture.iTextureId);
-			glBindTexture(GL_TEXTURE_2D, sTexture.iTextureId);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
+			sTexture.iWidth     = sTextureInfo.iWidth;
+			sTexture.iHeight    = sTextureInfo.iHeight;
+			sTexture.iTextureId = this->m_VideoSystem->CreateTexture(false);
 
 			// Sizes of each mipmap.
 			const int dimensionsSquared[4] = { 1,4,16,64 };
@@ -541,8 +523,7 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 						}
 					}
 				}
-
-				glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA, sTextureInfo.iWidth / dimensions[mip], sTextureInfo.iHeight / dimensions[mip], 0, GL_RGBA, GL_UNSIGNED_BYTE, dataUp);
+				this->m_VideoSystem->AddTexture(mip, sTextureInfo.iWidth / dimensions[mip], sTextureInfo.iHeight / dimensions[mip], dataUp, false);
 			}
 
 			this->m_vLoadedTextures[sTextureInfo.szName] = sTexture;
@@ -560,6 +541,9 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 	}
 
 	delete[] texOffSets;
+	delete[] dataDr;
+	delete[] dataPal;
+	delete[] dataUp;
 }
 
 

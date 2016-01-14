@@ -27,6 +27,8 @@
 #include <fstream>
 #include <map>
 
+class VideoSystem;
+
 // References:
 // http://hlbsp.sourceforge.net/index.php?content=waddef
 // http://nemesis.thewavelength.net/index.php?p=35
@@ -89,7 +91,7 @@ public:
 	TextureLoader();
 	~TextureLoader();
 
-	int LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const std::string &szFilename);
+	int LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const std::string &szFilename, VideoSystem* videosystem);
 
 private:
 	/**

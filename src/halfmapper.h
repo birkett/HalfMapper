@@ -71,8 +71,8 @@ private:
 	std::vector<BSP*> m_LoadedMaps;       /** Vector of loaded maps. */
 
 	bool              m_bShouldQuit;      /** Set to true when a quit event is received. */
-	Point2f*          m_fRotation;        /** Camera rotation. */
-	Point3f*          m_fPosition;        /** Camera position. */
+	Point2f           m_fRotation;        /** Camera rotation. */
+	Point3f           m_fPosition;        /** Camera position. */
 	float             m_fIsoBounds;       /** Isometric boundaries. */
 
 };//end HalfMapper

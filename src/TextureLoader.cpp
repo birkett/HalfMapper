@@ -1,7 +1,7 @@
 #include <iostream>
-#include "GL/glew.h"
 #include "bsp.h"
 #include "TextureLoader.h"
+#include "VideoSystem.h"
 
 /**
  * Constructor.
@@ -27,7 +27,7 @@ TextureLoader::~TextureLoader()
  * \param szGamePaths A vector of gamepath strings.
  * \param szFilename  Filename to load.
  */
-int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const string &szFilename)
+int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const string &szFilename, VideoSystem* videosystem)
 {
 	// Try to open the file from all known gamepaths.
 	for (size_t i = 0; i < szGamePaths.size(); i++) {
@@ -71,12 +71,8 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 			sTexture.iWidth = sTextureInfo.iWidth;
 			sTexture.iWidth = sTextureInfo.iHeight;
 
-			glGenTextures(1, &sTexture.iTextureId);		
-			glBindTexture(GL_TEXTURE_2D, sTexture.iTextureId);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
-			
+			sTexture.iTextureId = videosystem->CreateTexture(false);
+
 			// Sizes of each mipmap.
 			const int dimensionsSquared[4] = {1,4,16,64};
 			const int dimensions[4] = {1,2,4,8};
@@ -117,7 +113,7 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 					}
 				}
 				
-				glTexImage2D(GL_TEXTURE_2D, mip, GL_RGBA, sTextureInfo.iWidth / dimensions[mip], sTextureInfo.iHeight / dimensions[mip], 0, GL_RGBA, GL_UNSIGNED_BYTE, dataUp);
+				videosystem->AddTexture(mip, sTextureInfo.iWidth / dimensions[mip], sTextureInfo.iHeight / dimensions[mip], dataUp, false);
 			}
 			
 			this->m_vLoadedTextures[sTextureInfo.szName] = sTexture;
@@ -126,7 +122,10 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 	
 	this->m_sWadFile.close();
 
-	delete []dataDr; delete []dataUp; delete []dataPal; delete []sWadEntry;
+	delete[] dataDr;
+	delete[] dataUp;
+	delete[] dataPal;
+	delete[] sWadEntry;
 	return 0;
 }
 
