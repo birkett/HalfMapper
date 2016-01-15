@@ -78,13 +78,16 @@ int WADLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, 
 
 	uint32_t* iOffsets = new uint32_t[sWadHeader.iLumpCount];
 
-	for (uint32_t i = 0; i <= sWadHeader.iLumpCount; i++) {
+	for (uint32_t i = 0; i < sWadHeader.iLumpCount; i++) {
 		iOffsets[i] = sWadEntry[i].iOffset;
 	}
 
 	TextureLoader::GetInstance()->LoadTextures(sWadHeader.iLumpCount, iOffsets, this->m_sWadFile, videosystem);
 
 	this->m_sWadFile.close();
+
+	delete[] sWadEntry;
+	delete[] iOffsets;
 
 	return 0;
 
