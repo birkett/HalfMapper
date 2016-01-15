@@ -19,6 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
+#include "util/MemoryDebugging.h"
 #include <iostream>
 #include <SDL.h>
 #include <GL/glew.h>
@@ -173,9 +174,9 @@ void VideoSystem::SetWindowTitle(const char* szTitle)
  * Create a new texture in video memory, and return it's ID.
  * \param bIsLightmap Are we building a lightmap, or a normal mipmapped texture.
  */
-unsigned int VideoSystem::CreateTexture(const bool bIsLightmap)
+unsigned int VideoSystem::CreateTexture(const bool &bIsLightmap)
 {
-	unsigned int iTextureID;
+	unsigned int iTextureID = 0;
 
 	glGenTextures(1, &iTextureID);
 	glBindTexture(GL_TEXTURE_2D, iTextureID);

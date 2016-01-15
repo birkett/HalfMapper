@@ -1,3 +1,4 @@
+#include "util/MemoryDebugging.h"
 #include <cstring>
 #include <iostream>
 #include <fstream>
@@ -469,11 +470,11 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 
 	uint32_t* iOffsets = new uint32_t[theader.nMipTextures];
 
-	for (uint32_t i = 0; i <= theader.nMipTextures; i++) {
+	for (uint32_t i = 0; i < theader.nMipTextures; i++) {
 		iOffsets[i] = sHeader.lump[LUMP_TEXTURES].nOffset + texOffSets[i];
 	}
 
-
+	// Save the texture names in order that they will be loaded. Need them later for binding.
 	for (unsigned int i = 0; i < theader.nMipTextures; i++) {
 		this->m_sBSPFile.seekg(iOffsets[i], std::ios::beg);
 		TextureInfo sTextureInfo;
@@ -482,6 +483,9 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 	}
 
 	TextureLoader::GetInstance()->LoadTextures(theader.nMipTextures, iOffsets, this->m_sBSPFile, this->m_VideoSystem);
+
+	delete[] iOffsets;
+	delete[] texOffSets;
 }
 
 

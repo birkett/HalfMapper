@@ -22,6 +22,7 @@
 #ifndef CONFIGXML_H
 #define CONFIGXML_H
 
+#include "util/MemoryDebugging.h"
 #include <string>
 #include <vector>
 #include <map>

@@ -22,6 +22,7 @@
 #ifndef TEXTURELOADER_H
 #define TEXTURELOADER_H
 
+#include "util/MemoryDebugging.h"
 #include <vector>
 #include <string>
 #include <fstream>

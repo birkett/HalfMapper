@@ -1,6 +1,7 @@
 #ifndef BSP_H
 #define BSP_H
 
+#include "util/MemoryDebugging.h"
 #include <map>
 #include <vector>
 #include <string>

@@ -22,6 +22,7 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+#include "util/MemoryDebugging.h"
 #include "CommonTypes.h"
 
 // Avoid including SDL just for these basic types.
@@ -77,7 +78,7 @@ public:
 	 * Create a new texture in video memory, and return it's ID.
 	 * \param bIsLightmap Are we building a lightmap, or a normal mipmapped texture.
 	 */
-	unsigned int CreateTexture(const bool bIsLightmap);
+	unsigned int CreateTexture(const bool &bIsLightmap);
 
 	/**
 	 * Generate a texture in video memory.

@@ -19,6 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
+#include "util/MemoryDebugging.h"
 #include <iostream>
 #include "TextureLoader.h"
 #include "VideoSystem.h"
@@ -45,7 +46,7 @@ TextureLoader::~TextureLoader()
 
 
 /**
- * Load textures from a WAD file.
+ * Load textures from a file.
  * \param szGamePaths A vector of gamepath strings.
  * \param iOffsets    Array of texture offsets.
  * \param inFile      File stream (already opened).
@@ -78,7 +79,7 @@ int TextureLoader::LoadTextures(const unsigned int &iNumberOfTextures, const uin
 			// Read each mipmap.
 			for(int mip = 3; mip >= 0; mip--) {
 				if (sTextureInfo.iOffsets[0] == 0 || sTextureInfo.iOffsets[1] == 0 || sTextureInfo.iOffsets[2] == 0 || sTextureInfo.iOffsets[3] == 0) {
-					std::cout << "Texture found, but no mipmaps. " << sTextureInfo.szName << std::endl;
+					std::cout << "Found WAD texture reference in BSP, but doesn't appear to be loaded: " << sTextureInfo.szName << std::endl;
 					break;
 				}
 

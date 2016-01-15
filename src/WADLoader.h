@@ -22,6 +22,7 @@
 #ifndef WADLOADER_H
 #define WADLOADER_H
 
+#include "util/MemoryDebugging.h"
 #include <stdint.h>
 #include <vector>
 #include <fstream>

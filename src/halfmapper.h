@@ -22,6 +22,7 @@
 #ifndef HALFMAPPER_H
 #define HALFMAPPER_H
 
+#include "util/MemoryDebugging.h"
 #include <vector>
 #include "CommonTypes.h"
 
