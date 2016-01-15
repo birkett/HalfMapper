@@ -138,7 +138,7 @@ class BSP{
 		BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry, VideoSystem* &videosystem);
 		~BSP();
 		void Render();
-		int totalTris;
+		size_t totalTris;
 		void SetChapterOffset(const float x, const float y, const float z);
 
 	private:
@@ -169,8 +169,7 @@ class BSP{
 		float *maxUV;
 		uint8_t *lmap;
 
-		std::map<std::string, Texture> m_vLoadedTextures;
-		std::vector<std::string> m_vTexNames;
+		std::vector<std::string>  m_vTexNames; /** Vector of loaded texture names. */
 		std::map<std::string, std::vector<std::string> > m_vDontRenderModel;
 		std::map<int, bool> m_vDontRenderFace;
 		std::vector<Vertex3f> m_vVerticesPrime;

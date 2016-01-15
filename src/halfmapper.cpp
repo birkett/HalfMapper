@@ -24,7 +24,7 @@
 #include <SDL.h>
 #include "halfmapper.h"
 #include "VideoSystem.h"
-#include "TextureLoader.h"
+#include "WADLoader.h"
 #include "bsp.h"
 #include "ConfigXML.h"
 
@@ -50,7 +50,7 @@ HalfMapper::~HalfMapper()
 	}
 
 	m_LoadedMaps.clear();
-	delete this->m_TextureLoader;
+	delete this->m_WADLoader;
 	delete this->m_VideoSystem;
 	delete this->m_XMLConfiguration;
 
@@ -101,10 +101,10 @@ int HalfMapper::Run(const int iArgc, char* szArgv[])
  */
 int HalfMapper::LoadTextures()
 {
-	this->m_TextureLoader = new TextureLoader();
+	this->m_WADLoader = new WADLoader();
 
 	for (size_t i = 0; i < this->m_XMLConfiguration->m_vWads.size(); i++) {
-		if (this->m_TextureLoader->LoadTexturesFromWAD(this->m_XMLConfiguration->m_szGamePaths, this->m_XMLConfiguration->m_vWads[i] + ".wad", this->m_VideoSystem) != 0) {
+		if (this->m_WADLoader->LoadTexturesFromWAD(this->m_XMLConfiguration->m_szGamePaths, this->m_XMLConfiguration->m_vWads[i] + ".wad", this->m_VideoSystem) != 0) {
 			return -1;
 		}
 	}
@@ -119,10 +119,10 @@ int HalfMapper::LoadTextures()
  */
 void HalfMapper::LoadMaps()
 {
-	int ticks          = SDL_GetTicks();
-	int mapCount       = 0;
-	int mapRenderCount = 0;
-	int totalTris      = 0;
+	int    ticks          = SDL_GetTicks();
+	int    mapCount       = 0;
+	int    mapRenderCount = 0;
+	size_t totalTris      = 0;
 
 	for (size_t i = 0; i < this->m_XMLConfiguration->m_vChapterEntries.size(); i++) {
 		for (size_t j = 0; j < this->m_XMLConfiguration->m_vChapterEntries[i].m_vMapEntries.size(); j++) {

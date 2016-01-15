@@ -1,15 +1,38 @@
+/*
+ * halfmapper, a renderer for GoldSrc maps and chapters.
+ *
+ * Copyright(C) 2014  Gonzalo Ávila "gzalo" Alterach
+ * Copyright(C) 2015  Anthony "birkett" Birkett
+ *
+ * This file is part of halfmapper.
+ *
+ * This program is free software; you can redistribute it and / or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see http://www.gnu.org/licenses/
+ */
 #include <iostream>
-#include "bsp.h"
 #include "TextureLoader.h"
 #include "VideoSystem.h"
 
-/**
- * Constructor.
- */
-TextureLoader::TextureLoader()
-{
 
-}//end TextureLoader::TextureLoader()
+/**
+ * Get the singleton instance.
+ */
+TextureLoader* TextureLoader::GetInstance()
+{
+	static std::auto_ptr<TextureLoader> instance(new TextureLoader());
+	return instance.get();
+
+}//end TextureLoader::GetInstance()
 
 
 /**
@@ -17,7 +40,6 @@ TextureLoader::TextureLoader()
  */
 TextureLoader::~TextureLoader()
 {
-	this->m_sWadFile.close();
 
 }//end TextureLoader::~TextureLoader()
 
@@ -25,51 +47,27 @@ TextureLoader::~TextureLoader()
 /**
  * Load textures from a WAD file.
  * \param szGamePaths A vector of gamepath strings.
- * \param szFilename  Filename to load.
+ * \param iOffsets    Array of texture offsets.
+ * \param inFile      File stream (already opened).
+ * \param videosystem Pointer to the videosystem object.
  */
-int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const string &szFilename, VideoSystem* videosystem)
+int TextureLoader::LoadTextures(const unsigned int &iNumberOfTextures, const uint32_t* iOffsets, std::ifstream &inFile, VideoSystem* videosystem)
 {
-	// Try to open the file from all known gamepaths.
-	for (size_t i = 0; i < szGamePaths.size(); i++) {
-		if (!this->m_sWadFile.is_open()) {
-			this->m_sWadFile.open(szGamePaths[i] + szFilename.c_str(), std::ios::binary);
-		}
-	}
-
-	// If the WAD wasn't found in any of the gamepaths...
-	if(!this->m_sWadFile.is_open()) {
-		std::cerr << "Can't load WAD " << szFilename << "." << std::endl;
-		return -1;
-	}
-
-	// Read header.
-	WADHeader sWadHeader; this->m_sWadFile.read((char*)&sWadHeader, sizeof(WADHeader));
-
-	if (!this->IsValidWADHeader(sWadHeader)) {
-		return -1;
-	}
-
-	// Read directory entries.
-	WADEntry *sWadEntry = new WADEntry[sWadHeader.iLumpCount];
-
-	this->m_sWadFile.seekg(sWadHeader.iLumpOffset, ios::beg);
-	this->m_sWadFile.read((char*)sWadEntry, sizeof(WADEntry) * sWadHeader.iLumpCount);
-
 	uint8_t *dataDr  = new uint8_t[512*512];   // Raw texture data.
 	uint8_t *dataUp  = new uint8_t[512*512*4]; // 32 bit texture.
 	uint8_t *dataPal = new uint8_t[256*3];     // 256 color pallete.
 
-	for(unsigned int i = 0; i < sWadHeader.iLumpCount; i++) {
-		this->m_sWadFile.seekg(sWadEntry[i].iOffset, ios::beg);
+	for(unsigned int i = 0; i < iNumberOfTextures; i++) {
+		inFile.seekg(iOffsets[i], std::ios::beg);
 
 		TextureInfo sTextureInfo;
-		this->m_sWadFile.read((char*)&sTextureInfo, sizeof(TextureInfo));
+		inFile.read((char*)&sTextureInfo, sizeof(TextureInfo));
 
 		// Only load if it's the first appearance of the texture.
 		if(this->m_vLoadedTextures.count(sTextureInfo.szName) == 0) {
 			Texture sTexture;
-			sTexture.iWidth = sTextureInfo.iWidth;
-			sTexture.iWidth = sTextureInfo.iHeight;
+			sTexture.iWidth  = sTextureInfo.iWidth;
+			sTexture.iHeight = sTextureInfo.iHeight;
 
 			sTexture.iTextureId = videosystem->CreateTexture(false);
 
@@ -84,14 +82,14 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 					break;
 				}
 
-				this->m_sWadFile.seekg(sWadEntry[i].iOffset + sTextureInfo.iOffsets[mip], ios::beg);
-				this->m_sWadFile.read((char*)dataDr, sTextureInfo.iWidth * sTextureInfo.iHeight / dimensionsSquared[mip]);
+				inFile.seekg(iOffsets[i] + sTextureInfo.iOffsets[mip], std::ios::beg);
+				inFile.read((char*)dataDr, sTextureInfo.iWidth * sTextureInfo.iHeight / dimensionsSquared[mip]);
 
 				if(mip == 3) {
 					// Read the pallete (comes after last mipmap).
 					uint16_t dummy;
-					this->m_sWadFile.read((char*)&dummy, 2);
-					this->m_sWadFile.read((char*)dataPal, 256 * 3);
+					inFile.read((char*)&dummy, 2);
+					inFile.read((char*)dataPal, 256 * 3);
 				}
 
 				for (uint32_t y = 0; y < sTextureInfo.iHeight / dimensions[mip]; y++) {
@@ -117,33 +115,29 @@ int TextureLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePat
 			}
 
 			this->m_vLoadedTextures[sTextureInfo.szName] = sTexture;
+
+			/* If mipmap offsets = 0
+			Create new texture in its place with dummy values.
+			Texture n;
+			n.iTextureId = 0;
+			n.iWidth = 1;
+			n.iHeight = 1;
+			textures[sTextureInfo.szName]=n;
+			*/
 		}
 	}
-
-	this->m_sWadFile.close();
 
 	delete[] dataDr;
 	delete[] dataUp;
 	delete[] dataPal;
-	delete[] sWadEntry;
+
 	return 0;
-}
+}//end TextureLoader::LoadTextures()
 
 
 /**
- * Check if a loaded WAD header is valid.
- * \param sHeader Loaded WAD header structure.
+ * Constructor. Private for singleton.
  */
-bool TextureLoader::IsValidWADHeader(const WADHeader &sHeader)
+TextureLoader::TextureLoader()
 {
-	if (   sHeader.szMagic[0] != 'W'
-		|| sHeader.szMagic[1] != 'A'
-		|| sHeader.szMagic[2] != 'D'
-		|| sHeader.szMagic[3] != '3'
-	) {
-		return false;
-	}
-
-	return true;
-
-}//end TextureLoader::IsValidWADHeader()
+}//end TextureLoader::TextureLoader()

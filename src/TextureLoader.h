@@ -29,37 +29,6 @@
 
 class VideoSystem;
 
-// References:
-// http://hlbsp.sourceforge.net/index.php?content=waddef
-// http://nemesis.thewavelength.net/index.php?p=35
-
-/**
- * First 12 bytes of a WAD are the header.
- */
-struct WADHeader
-{
-	char     szMagic[4];  /** Magic signature (WAD2 or WAD3). */
-	uint32_t iLumpCount;  /** Number of lump entries. */
-	uint32_t iLumpOffset; /** Offset to the lump. */
-};//end WadHeader
-
-
-/**
- * Each object in the WAD has a 32 byte entry after the WAD header.
- */
-struct WADEntry
-{
-	uint32_t iOffset;      /** Object position in the WAD. */
-	uint32_t iDiskSize;    /** Object size in WAD. */
-	uint32_t iSize;        /** Uncompressed object size. */
-	uint8_t  iType;        /** Type of object. */
-	bool     bCompression; /** Compression. */
-	uint8_t  iPadding0;    /** Unused. */
-	uint8_t  iPadding1;    /** Unused. */
-	char     szName[16];   /** Object name, null terminated. */
-};//end WadEntry
-
-
 /**
  * Holds basic data on each texture object.
  */
@@ -88,20 +57,26 @@ struct Texture
 class TextureLoader
 {
 public:
-	TextureLoader();
+	/** Get the singleton instance. */
+	static TextureLoader* GetInstance();
+
+	/** Destructor. */
 	~TextureLoader();
 
-	int LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, const std::string &szFilename, VideoSystem* videosystem);
+	/**
+	 * Load textures from a WAD file.
+	 * \param szGamePaths A vector of gamepath strings.
+	 * \param iOffsets    Array of texture offsets.
+	 * \param inFile      File stream (already opened).
+	 * \param videosystem Pointer to the videosystem object.
+	 */
+	int LoadTextures(const unsigned int &iNumberOfTextures, const uint32_t* iOffsets, std::ifstream &inFilfe, VideoSystem* videosystem);
+
+	std::map<std::string, Texture> m_vLoadedTextures; /** Map of loaded textures, accessible by name. */
 
 private:
-	/**
-	 * Check if a loaded WAD header is valid.
-	 * \param sHeader Loaded WAD header structure.
-	 */
-	bool IsValidWADHeader(const WADHeader &sHeader);
-
-	std::ifstream                  m_sWadFile;        /** File stream to load the WAD. */
-	std::map<std::string, Texture> m_vLoadedTextures; /** Map of loaded textures, accessible by name. */
+	/* Constructor. Private for singleton. */
+	TextureLoader();
 
 };//end TextureLoader
 

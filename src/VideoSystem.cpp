@@ -214,6 +214,10 @@ void VideoSystem::AddTexture(const unsigned int &iMipLevel, const unsigned int &
 
 	glTexImage2D(GL_TEXTURE_2D, iMipLevel, iFormatFlag, iWidth, iHeight, 0, iFormatFlag, GL_UNSIGNED_BYTE, pixels);
 
+	if (glGetError() != GL_NO_ERROR) {
+		std::cerr << "GL texture loading error, code " << glGetError() << std::endl;
+	}
+
 }//end VideoSystem::AddTexture()
 
 
@@ -224,7 +228,7 @@ void VideoSystem::AddTexture(const unsigned int &iMipLevel, const unsigned int &
  */
 void VideoSystem::CreateBuffer(const size_t &iBufferSize, unsigned int* objects)
 {
-	glGenBuffers(iBufferSize, objects);
+	glGenBuffers((int)iBufferSize, objects);
 
 }//end VideoSyetem::CreateBuffer()
 
@@ -295,7 +299,7 @@ void VideoSystem::PushData(const unsigned int objects, const unsigned int iTextu
 	glTexCoordPointer(2, GL_FLOAT, iDataSize, (char*)NULL + 4 * 5);
 
 	glVertexPointer(3, GL_FLOAT, iDataSize, (void*)0);
-	glDrawArrays(GL_TRIANGLES, 0, iDataArraySize);
+	glDrawArrays(GL_TRIANGLES, 0, (int)iDataArraySize);
 
 }//end VideoSystem::PushData()
 

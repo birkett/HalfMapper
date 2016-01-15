@@ -467,83 +467,21 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 	int *texOffSets = new int[theader.nMipTextures];
 	this->m_sBSPFile.read((char*)texOffSets, theader.nMipTextures * sizeof(int));
 
-	uint8_t *dataDr  = new uint8_t[512 * 512];     // Raw texture data.
-	uint8_t *dataUp  = new uint8_t[512 * 512 * 4]; // 32 bit texture.
-	uint8_t *dataPal = new uint8_t[256 * 3];       // 256 color pallete.
+	uint32_t* iOffsets = new uint32_t[theader.nMipTextures];
+
+	for (uint32_t i = 0; i <= theader.nMipTextures; i++) {
+		iOffsets[i] = sHeader.lump[LUMP_TEXTURES].nOffset + texOffSets[i];
+	}
+
 
 	for (unsigned int i = 0; i < theader.nMipTextures; i++) {
-		this->m_sBSPFile.seekg(sHeader.lump[LUMP_TEXTURES].nOffset + texOffSets[i], ios::beg);
-
+		this->m_sBSPFile.seekg(iOffsets[i], std::ios::beg);
 		TextureInfo sTextureInfo;
 		this->m_sBSPFile.read((char*)&sTextureInfo, sizeof(TextureInfo));
-
-		// First appearance of the texture.
-		if (this->m_vLoadedTextures.count(sTextureInfo.szName) == 0) {
-			Texture sTexture;
-			sTexture.iWidth     = sTextureInfo.iWidth;
-			sTexture.iHeight    = sTextureInfo.iHeight;
-			sTexture.iTextureId = this->m_VideoSystem->CreateTexture(false);
-
-			// Sizes of each mipmap.
-			const int dimensionsSquared[4] = { 1,4,16,64 };
-			const int dimensions[4] = { 1,2,4,8 };
-
-			// Read each mipmap.
-			for (int mip = 3; mip >= 0; mip--) {
-				if (sTextureInfo.iOffsets[0] == 0 || sTextureInfo.iOffsets[1] == 0 || sTextureInfo.iOffsets[2] == 0 || sTextureInfo.iOffsets[3] == 0) {
-					std::cout << "Texture found, but no mipmaps. " << sTextureInfo.szName << std::endl;
-					break;
-				}
-
-				this->m_sBSPFile.seekg(sHeader.lump[LUMP_TEXTURES].nOffset + texOffSets[i] + sTextureInfo.iOffsets[mip], ios::beg);
-				this->m_sBSPFile.read((char*)dataDr, sTextureInfo.iWidth * sTextureInfo.iHeight / dimensionsSquared[mip]);
-
-				if (mip == 3) {
-					// Read the pallete (comes after last mipmap).
-					uint16_t dummy;
-					this->m_sBSPFile.read((char*)&dummy, 2);
-					this->m_sBSPFile.read((char*)dataPal, 256 * 3);
-				}
-
-				for (uint32_t y = 0; y < sTextureInfo.iHeight / dimensions[mip]; y++) {
-					for (uint32_t x = 0; x < sTextureInfo.iWidth / dimensions[mip]; x++) {
-						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4] = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3];
-						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 1] = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3 + 1];
-						dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 2] = dataPal[dataDr[y * sTextureInfo.iWidth / dimensions[mip] + x] * 3 + 2];
-
-						// Do full transparency on blue pixels.
-						if (dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4] == 0
-							&& dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 1] == 0
-							&& dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 2] == 255
-							) {
-							dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 3] = 0;
-						}
-						else {
-							dataUp[(x + y * sTextureInfo.iWidth / dimensions[mip]) * 4 + 3] = 255;
-						}
-					}
-				}
-				this->m_VideoSystem->AddTexture(mip, sTextureInfo.iWidth / dimensions[mip], sTextureInfo.iHeight / dimensions[mip], dataUp, false);
-			}
-
-			this->m_vLoadedTextures[sTextureInfo.szName] = sTexture;
-
-			/* If mipmap offsets = 0
-			Create new texture in its place with dummy values.
-			Texture n;
-			n.iTextureId = 0;
-			n.iWidth = 1;
-			n.iHeight = 1;
-			textures[sTextureInfo.szName]=n;
-			*/
-		}
 		this->m_vTexNames.push_back(sTextureInfo.szName);
 	}
 
-	delete[] texOffSets;
-	delete[] dataDr;
-	delete[] dataPal;
-	delete[] dataUp;
+	TextureLoader::GetInstance()->LoadTextures(theader.nMipTextures, iOffsets, this->m_sBSPFile, this->m_VideoSystem);
 }
 
 
@@ -579,7 +517,7 @@ void BSP::LoadTris(const BSPHeader &sHeader)
 		float fX = (float)lmaps[i].finalX;
 		float fY = (float)lmaps[i].finalY;
 
-		Texture sTex = this->m_vLoadedTextures[faceTexName];
+		Texture sTex = TextureLoader::GetInstance()->m_vLoadedTextures[faceTexName];
 
 		vector <VECFINAL>*vt = &texturedTris[faceTexName].triangles;
 
@@ -618,7 +556,7 @@ void BSP::LoadTris(const BSPHeader &sHeader)
 			vt->push_back(VECFINAL(v2, c2, c2l));
 			vt->push_back(VECFINAL(v3, c3, c3l));
 		}
-		texturedTris[faceTexName].texId = this->m_vLoadedTextures[faceTexName].iTextureId;
+		texturedTris[faceTexName].texId = TextureLoader::GetInstance()->m_vLoadedTextures[faceTexName].iTextureId;
 	}
 
 	delete[] m_btfs;
