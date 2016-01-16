@@ -38,7 +38,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 	// Try to open the file from all known gamepaths.
 	for (size_t i = 0; i < szGamePaths.size(); i++) {
 		if (!this->m_sBSPFile.is_open()) {
-			this->m_sBSPFile.open(szGamePaths[i] + "maps/" + this->m_szMapID + ".bsp", ios::binary);
+			this->m_sBSPFile.open(szGamePaths[i] + "maps/" + this->m_szMapID + ".bsp", std::ios::binary);
 		}
 	}
 
@@ -66,7 +66,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 	this->LoadSurfEdges(sHeader);
 
 	// Read Lightmaps.
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_LIGHTING].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_LIGHTING].nOffset, std::ios::beg);
 	int size = sHeader.lump[LUMP_LIGHTING].nLength;
 	lmap = new uint8_t[size];
 	this->m_sBSPFile.read((char*)lmap, size);
@@ -75,7 +75,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 	this->LoadTextures(sHeader);
 
 	// Read Texture information.
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_TEXINFO].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_TEXINFO].nOffset, std::ios::beg);
 	m_btfs = new BSPTEXTUREINFO[sHeader.lump[LUMP_TEXINFO].nLength / (int)sizeof(BSPTEXTUREINFO)];
 	this->m_sBSPFile.read((char*)m_btfs, sHeader.lump[LUMP_TEXINFO].nLength);
 
@@ -203,11 +203,11 @@ bool BSP::IsValidBSPHeader(const BSPHeader &sHeader)
 
 void BSP::ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry)
 {
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_ENTITIES].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_ENTITIES].nOffset, std::ios::beg);
 	char *szEntitiesLump = new char[sHeader.lump[LUMP_ENTITIES].nLength];
 	this->m_sBSPFile.read(szEntitiesLump, sHeader.lump[LUMP_ENTITIES].nLength);
 
-	stringstream ss(szEntitiesLump);
+	std::stringstream ss(szEntitiesLump);
 
 	int status = 0;
 
@@ -302,13 +302,13 @@ void BSP::ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry)
 
 void BSP::LoadFacesAndLightMaps(const BSPHeader &sHeader)
 {
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_FACES].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_FACES].nOffset, std::ios::beg);
 
 	for (int i = 0; i < sHeader.lump[LUMP_FACES].nLength / (int)sizeof(BSPFACE); i++) {
 		BSPFACE f;
 		this->m_sBSPFile.read((char*)&f, sizeof(f));
 		BSPTEXTUREINFO b = m_btfs[f.iTextureInfo];
-		string faceTexName = this->m_vTexNames[b.iMiptex];
+		std::string faceTexName = this->m_vTexNames[b.iMiptex];
 
 		minUV[i * 2] = minUV[i * 2 + 1] = 99999;
 		maxUV[i * 2] = maxUV[i * 2 + 1] = -99999;
@@ -322,13 +322,13 @@ void BSP::LoadFacesAndLightMaps(const BSPHeader &sHeader)
 			COORDS c2 = calcCoords(v2, b.vS, b.vT, b.fSShift, b.fTShift);
 			COORDS c3 = calcCoords(v3, b.vS, b.vT, b.fSShift, b.fTShift);
 
-			minUV[i * 2] = min(minUV[i * 2], c1.u); minUV[i * 2 + 1] = min(minUV[i * 2 + 1], c1.v);
-			minUV[i * 2] = min(minUV[i * 2], c2.u); minUV[i * 2 + 1] = min(minUV[i * 2 + 1], c2.v);
-			minUV[i * 2] = min(minUV[i * 2], c3.u); minUV[i * 2 + 1] = min(minUV[i * 2 + 1], c3.v);
+			minUV[i * 2] = std::min(minUV[i * 2], c1.u); minUV[i * 2 + 1] = std::min(minUV[i * 2 + 1], c1.v);
+			minUV[i * 2] = std::min(minUV[i * 2], c2.u); minUV[i * 2 + 1] = std::min(minUV[i * 2 + 1], c2.v);
+			minUV[i * 2] = std::min(minUV[i * 2], c3.u); minUV[i * 2 + 1] = std::min(minUV[i * 2 + 1], c3.v);
 
-			maxUV[i * 2] = max(maxUV[i * 2], c1.u); maxUV[i * 2 + 1] = max(maxUV[i * 2 + 1], c1.v);
-			maxUV[i * 2] = max(maxUV[i * 2], c2.u); maxUV[i * 2 + 1] = max(maxUV[i * 2 + 1], c2.v);
-			maxUV[i * 2] = max(maxUV[i * 2], c3.u); maxUV[i * 2 + 1] = max(maxUV[i * 2 + 1], c3.v);
+			maxUV[i * 2] = std::max(maxUV[i * 2], c1.u); maxUV[i * 2 + 1] = std::max(maxUV[i * 2 + 1], c1.v);
+			maxUV[i * 2] = std::max(maxUV[i * 2], c2.u); maxUV[i * 2 + 1] = std::max(maxUV[i * 2 + 1], c2.v);
+			maxUV[i * 2] = std::max(maxUV[i * 2], c3.u); maxUV[i * 2 + 1] = std::max(maxUV[i * 2 + 1], c3.v);
 		}
 
 		int lmw = (int)(ceil(maxUV[i * 2]     / 16) - floor(minUV[i * 2]     / 16) + 1);
@@ -364,10 +364,10 @@ void BSP::GenerateLightMaps()
 	//Light map "rover" algorithm from Quake 2 (http://fabiensanglard.net/quake2/quake2_opengl_renderer.php)
 	for (unsigned int i = 0; i < lmaps.size(); i++) {
 		int best  = 1024;
+		int best2 = 0;
 
 		for (int a = 0; a < 1024 - lmaps[i].w; a++) {
-			int best2 = 0;
-			int j     = 0;
+			int j = 0;
 
 			for (j = 0; j < lmaps[i].w; j++) {
 				if (lmapRover[a + j] >= best) {
@@ -384,7 +384,7 @@ void BSP::GenerateLightMaps()
 		}
 
 		if (best + lmaps[i].h > 1024) {
-			cout << "Lightmap atlas is too small (" << this->m_szMapID << ")." << endl;
+			std::cout << "Lightmap atlas is too small (" << this->m_szMapID << ")." << std::endl;
 			break;
 		}
 
@@ -417,7 +417,7 @@ void BSP::GenerateLightMaps()
 void BSP::LoadModels(const BSPHeader &sHeader)
 {
 	BSPMODEL *models = new BSPMODEL[sHeader.lump[LUMP_MODELS].nLength / (int)sizeof(BSPMODEL)];
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_MODELS].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_MODELS].nOffset, std::ios::beg);
 	this->m_sBSPFile.read((char*)models, sHeader.lump[LUMP_MODELS].nLength);
 
 	for (size_t i = 0; i < this->m_vDontRenderModel[this->m_szMapID].size(); i++) {
@@ -436,7 +436,7 @@ void BSP::LoadSurfEdges(const BSPHeader &sHeader)
 {
 	// Read Vertices.
 	std::vector<Vertex3f> vertices;
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_VERTICES].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_VERTICES].nOffset, std::ios::beg);
 	for (int i = 0; i < sHeader.lump[LUMP_VERTICES].nLength / 12; i++) {
 		Vertex3f v;
 		this->m_sBSPFile.read((char*)&v, sizeof(v));
@@ -445,11 +445,11 @@ void BSP::LoadSurfEdges(const BSPHeader &sHeader)
 
 	// Read Edges.
 	BSPEDGE *edges = new BSPEDGE[sHeader.lump[LUMP_EDGES].nLength / (int)sizeof(BSPEDGE)];
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_EDGES].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_EDGES].nOffset, std::ios::beg);
 	this->m_sBSPFile.read((char*)edges, sHeader.lump[LUMP_EDGES].nLength);
 
 	// Read Surfedges.
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_SURFEDGES].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_SURFEDGES].nOffset, std::ios::beg);
 	for (int i = 0; i < sHeader.lump[LUMP_SURFEDGES].nLength / (int)sizeof(int); i++) {
 		int e;
 		this->m_sBSPFile.read((char*)&e, sizeof(e));
@@ -462,7 +462,7 @@ void BSP::LoadSurfEdges(const BSPHeader &sHeader)
 
 void BSP::LoadTextures(const BSPHeader &sHeader)
 {
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_TEXTURES].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_TEXTURES].nOffset, std::ios::beg);
 	BSPTEXTUREHEADER theader;
 	this->m_sBSPFile.read((char*)&theader, sizeof(theader));
 	int *texOffSets = new int[theader.nMipTextures];
@@ -491,7 +491,7 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 
 void BSP::LoadTris(const BSPHeader &sHeader)
 {
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_FACES].nOffset, ios::beg);
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_FACES].nOffset, std::ios::beg);
 	for (int i = 0; i < sHeader.lump[LUMP_FACES].nLength / (int)sizeof(BSPFACE); i++) {
 		BSPFACE f;
 		this->m_sBSPFile.read((char*)&f, sizeof(f));
@@ -502,7 +502,7 @@ void BSP::LoadTris(const BSPHeader &sHeader)
 
 		BSPTEXTUREINFO b = m_btfs[f.iTextureInfo];
 
-		string faceTexName = this->m_vTexNames[b.iMiptex];
+		std::string faceTexName = this->m_vTexNames[b.iMiptex];
 
 		//Calculate light map uvs
 		int lmw = (int)(ceil(maxUV[i * 2]     / 16) - floor(minUV[i * 2]     / 16) + 1);
@@ -523,7 +523,7 @@ void BSP::LoadTris(const BSPHeader &sHeader)
 
 		Texture sTex = TextureLoader::GetInstance()->m_vLoadedTextures[faceTexName];
 
-		vector <VECFINAL>*vt = &texturedTris[faceTexName].triangles;
+		std::vector<VECFINAL>*vt = &texturedTris[faceTexName].triangles;
 
 		for (int j = 2, k = 1; j < f.nEdges; j++, k++) {
 			Vertex3f v1 = this->m_vVerticesPrime[f.iFirstEdge];

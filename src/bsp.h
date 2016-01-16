@@ -7,7 +7,7 @@
 #include <string>
 #include <fstream>
 
-using namespace std;
+//using namespace std;
 
 //Extracted from http://hlbsp.sourceforge.net/index.php?content=bspdef
 
@@ -130,7 +130,7 @@ struct LMAP{
 };
 
 struct TEXSTUFF{
-	vector <VECFINAL> triangles;
+	std::vector<VECFINAL> triangles;
 	int texId;
 };
 
@@ -163,7 +163,7 @@ class BSP{
 		unsigned int lmapTexId;
 
 		std::vector<LMAP> lmaps;
-		map <string, TEXSTUFF > texturedTris;
+		std::map<std::string, TEXSTUFF> texturedTris;
 		unsigned int *bufObjects;
 		BSPTEXTUREINFO *m_btfs;
 		float *minUV;

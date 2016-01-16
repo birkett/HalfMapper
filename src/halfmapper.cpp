@@ -142,9 +142,9 @@ void HalfMapper::LoadMaps()
 		}
 	}
 
-	cout << mapCount << " maps found in config file." << endl;
-	cout << mapRenderCount << " maps to render - loaded in " << SDL_GetTicks() - ticks << " ms." << endl;
-	cout << "Total triangles: " << totalTris << endl;
+	std::cout << mapCount << " maps found in config file." << std::endl;
+	std::cout << mapRenderCount << " maps to render - loaded in " << SDL_GetTicks() - ticks << " ms." << std::endl;
+	std::cout << "Total triangles: " << totalTris << std::endl;
 
 }//end HalfMapper::LoadMaps()
 
@@ -212,7 +212,7 @@ void HalfMapper::InputLoop()
 	if (this->m_XMLConfiguration->m_bIsometric) {
 		m_fPosition.m_fZ += fLeft    * iSpeed;
 		m_fPosition.m_fY += fFrontal * iSpeed;
-		m_fIsoBounds = max(10.0f, m_fIsoBounds);
+		m_fIsoBounds = std::max(10.0f, m_fIsoBounds);
 	}
 	else {
 		if (fFrontal || fLeft) {
