@@ -22,26 +22,33 @@
 #ifndef MEMORYDEBUGGING_H
 #define MEMORYDEBUGGING_H
 
+// Define this symbol for all builds by default. Overridden below.
+#define PrintMemoryLeaks()
+
 // MSVCRT memory debugging.
 #ifdef _MSC_VER
 	#ifdef _DEBUG
-		#define _CRTDBG_MAP_ALLOC
-		#include <stdlib.h>
-		#include <crtdbg.h>
+		#ifdef USE_CRT_LD
+			#define _CRTDBG_MAP_ALLOC
+			#include <stdlib.h>
+			#include <crtdbg.h>
+
+			// When running the MSVCRT memory leak detection, redefine new.
+			//   This allows for more detailed output from the leak detector,
+			//   including allocation file name and line number.
+			#ifndef DBG_NEW
+				#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+				#define new DBG_NEW
+			#endif //DBG_NEW
+
+			#undef PrintMemoryLeaks
+			#define PrintMemoryLeaks() _CrtDumpMemoryLeaks()
+		#endif //USE_CRT_LD
+
+		#ifdef USE_VLD
+			#include <vld.h>
+		#endif //USE_VLD
 	#endif //_DEBUG
-#endif //_MSC_VER
-
-
-// When running the MSVCRT memory leak detection, redefine new.
-//   This allows for more detailed output from the leak detector,
-//   including allocation file name and line number.
-#ifdef _MSC_VER
-	#ifdef _DEBUG
-		#ifndef DBG_NEW
-			#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-			#define new DBG_NEW
-		#endif
-	#endif  //_DEBUG
 #endif //_MSC_VER
 
 #endif //MEMORYDEBUGGING_H

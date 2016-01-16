@@ -23,7 +23,15 @@ endif(UNIX OR MINGW)
 
 #Set compiller flags when on MSVC Windows.
 if(MSVC)
-  add_definitions("/W4 /D_CRT_SECURE_NO_WARNINGS")
+	if(DEFINED USE_CRT_LD)
+		add_definitions("/DUSE_CRT_LD=1")
+	endif(DEFINED USE_CRT_LD)
+
+	if(DEFINED USE_VLD)
+		add_definitions("/DUSE_VLD=1")
+	endif(DEFINED USE_VLD)
+
+	add_definitions("/W4 /D_CRT_SECURE_NO_WARNINGS")
 endif(MSVC)
 
 
@@ -31,6 +39,7 @@ endif(MSVC)
 file(GLOB SOURCE_FILES
     "src/*.h"
     "src/*.cpp"
+	"src/util/*.h"
 )
 
 file(GLOB TINYXML2_FILES

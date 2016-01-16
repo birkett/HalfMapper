@@ -40,12 +40,28 @@ git submodule update
 * Generate a Visual Studio solution by invoking CMake
 * Compile and debug inside Visual Studio
 
+**Memory Debugging**
+On debug builds, memory debugging is supported, using two methods.
+The first uses the MSVCRT leak detection (_CrtDumpMemoryLeaks). This works, but lists false-positives in std::map.
+The second method uses [Visual Leak Detector](https://vld.codeplex.com)
+
+To enable memory debugging, tell CMake to define the following preprocessor symbols:
+```
+USE_VLD
+USE_CRT_LD
+```
+
 ```shell
 set SDL2="C:\Users\Someone\Downloads\SDL2-2.0.4\"
 set GLEW="C:\Users\Someone\Downloads\GLEW-1.13.0\"
 mkdir ../halfmapper-build
 cd ../half-mapper-build
+
+#For a normal build.
 cmake ../halfmapper-src
+
+#For a build with memory debugging.
+cmake -DUSE_CRT_LD -DUSE_VLD ../halfmapper-src
 
 #VS Solution is now in "halfmapper-build"
 ```

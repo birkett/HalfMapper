@@ -277,11 +277,7 @@ int main(int argc, char** argv)
 
 	delete application;
 
-#ifdef _MSC_VER
-	#ifdef _DEBUG
-		_CrtDumpMemoryLeaks();
-	#endif //_DEBUG
-#endif //_MSC_VER
+	PrintMemoryLeaks();
 
 	return iRetCode;
 
