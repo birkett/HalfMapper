@@ -42,6 +42,7 @@ struct WADHeader
 	char     szMagic[4];  /** Magic signature (WAD2 or WAD3). */
 	uint32_t iLumpCount;  /** Number of lump entries. */
 	uint32_t iLumpOffset; /** Offset to the lump. */
+
 };//end WadHeader
 
 
@@ -58,9 +59,13 @@ struct WADEntry
 	uint8_t  iPadding0;    /** Unused. */
 	uint8_t  iPadding1;    /** Unused. */
 	char     szName[16];   /** Object name, null terminated. */
+
 };//end WadEntry
 
 
+/**
+ * Load textures from a WAD. This just hides the file format from the TextureLoader.
+ */
 class WADLoader
 {
 public:
@@ -87,6 +92,6 @@ private:
 
 	std::ifstream m_sWadFile; /** File stream to load the WAD. */
 
-};
+};//end WADLoader
 
 #endif //WADLOADER_H

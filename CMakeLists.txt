@@ -42,6 +42,11 @@ file(GLOB SOURCE_FILES
 	"src/util/*.h"
 )
 
+file(GLOB LOGGER_FILES
+	"src/logger/*.h"
+	"src/logger/*.cpp"
+)
+
 file(GLOB TINYXML2_FILES
 	"thirdparty/tinyxml2/tinyxml2.cpp"
 	"thirdparty/tinyxml2/tinyxml2.h"
@@ -49,6 +54,10 @@ file(GLOB TINYXML2_FILES
 
 #Make sure tinyxml is in its own group in Visual Studio, and in the include path.
 SOURCE_GROUP(tinyxml2 FILES ${TINYXML2_FILES})
+
+#Logger files in one group.
+SOURCE_GROUP(Logger FILES ${LOGGER_FILES})
+
 include_directories("thirdparty/tinyxml2")
 
 #Add Windows resources.
@@ -59,7 +68,7 @@ if(MSVC OR MINGW)
   )
 endif(MSVC OR MINGW)
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${TINYXML2_FILES} ${RESOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${LOGGER_FILES} ${TINYXML2_FILES} ${RESOURCE_FILES})
 
 
 #Add link libraries.

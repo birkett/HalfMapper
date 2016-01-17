@@ -28,6 +28,8 @@
 #include "bsp.h"
 #include "ConfigXML.h"
 #include "Logger.h"
+#include "logger/CLogConsoleEndPoint.h"
+#include "logger/CLogFileEndPoint.h"
 
 
 /**
@@ -65,6 +67,12 @@ HalfMapper::~HalfMapper()
  */
 int HalfMapper::Run(const int iArgc, char* szArgv[])
 {
+	CLogConsoleEndPoint* console = new CLogConsoleEndPoint();
+	CLogFileEndPoint* fileout = new CLogFileEndPoint();
+
+	Logger::GetInstance()->RegisterEndPoint(console);
+	Logger::GetInstance()->RegisterEndPoint(fileout);
+
 	this->m_XMLConfiguration = new ConfigXML();
 
 	this->m_XMLConfiguration->LoadProgramConfig();

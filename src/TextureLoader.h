@@ -41,6 +41,7 @@ struct TextureInfo
 	uint32_t iWidth;                 /** Texture width. */
 	uint32_t iHeight;                /** Texture height. */
 	uint32_t iOffsets[MIPLEVELS];    /** Offsets to texture mipmaps. */
+
 };//end WadTextureInfo
 
 
@@ -52,9 +53,13 @@ struct Texture
 	unsigned int iTextureId; /** ID used internally. */
 	unsigned int iWidth;     /** Texture width. */
 	unsigned int iHeight;    /** Texture height. */
+
 };//end WadTexture
 
 
+/**
+ * Get textures from a source file, and pass them to the video system for loading.
+ */
 class TextureLoader
 {
 public:

@@ -51,6 +51,7 @@ using namespace tinyxml2;
  */
 struct MapEntry
 {
+	/** Constructor. */
 	MapEntry()
 	{
 		this->m_fOffsetX = this->m_fOffsetY = this->m_fOffsetZ = 0.0f;
@@ -63,6 +64,7 @@ struct MapEntry
 	float       m_fOffsetX;           /** Offset X axis. */
 	float       m_fOffsetY;           /** Offset Y axis. */
 	float       m_fOffsetZ;           /** Offset Z axis. */
+
 };//end MapEntry
 
 
@@ -71,6 +73,7 @@ struct MapEntry
  */
 struct ChapterEntry
 {
+	/** Constructor. */
 	ChapterEntry()
 	{
 		this->m_fOffsetX = this->m_fOffsetY = this->m_fOffsetZ = 0.0f;
@@ -83,6 +86,7 @@ struct ChapterEntry
 	float                 m_fOffsetX;    /** Offset X axis. */
 	float                 m_fOffsetY;    /** Offset Y axis. */
 	float                 m_fOffsetZ;    /** Offset Z axis. */
+
 };//end ChapterEntry
 
 

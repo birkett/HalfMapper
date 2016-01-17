@@ -23,7 +23,10 @@
 #define LOGGER_H
 
 #include <iostream>
+#include <sstream>
 #include <string>
+#include <vector>
+#include "logger/ILogEndPoint.h"
 
 /**
  * Log levels for specifying message types.
@@ -59,9 +62,13 @@ public:
 	template <typename FirstItem, typename... MoreItems>
 	void AddMessage(const LogLevel &eLevel, const FirstItem &szMessage, const MoreItems&... moreArgs)
 	{
-		this->ConsolePrint(this->GetTime(), this->GetMessageType(eLevel), szMessage, moreArgs...);
+		this->BufferString(this->GetTime(), this->GetMessageType(eLevel), szMessage, moreArgs...);
+		this->SendToEndPoints(this->m_szTempString.str());
+		this->m_szTempString.clear();
 
 	}//end AddMessage()
+
+	void RegisterEndPoint(ILogEndPoint* endpoint);
 
 private:
 	/** Constructor. Private for singleton. */
@@ -83,9 +90,9 @@ private:
 	 * \param singleItem A single item to print, or when called recursivly, the last item.
 	 */
 	template <typename SingleItem>
-	void ConsolePrint(const SingleItem& singleItem)
+	void BufferString(const SingleItem& singleItem)
 	{
-		std::cout << singleItem << std::endl; // Print a single item.
+		this->m_szTempString << singleItem; // Print a single item.
 
 	}//end ConsolePrint()
 
@@ -99,12 +106,17 @@ private:
 	 * \param moreItems Variable number of items left to print.
 	 */
 	template <typename FirstItem, typename... MoreItems>
-	void ConsolePrint(const FirstItem& firstItem, const MoreItems&... moreItems)
+	void BufferString(const FirstItem& firstItem, const MoreItems&... moreItems)
 	{
-		std::cout << firstItem << " "; // Print the first item.
-		ConsolePrint(moreItems...);    // Recurse to print the rest.
+		this->m_szTempString << firstItem << " "; // Print the first item.
+		BufferString(moreItems...);               // Recurse to print the rest.
 
 	}//end ConsolePrint()
+
+	void SendToEndPoints(const std::string &szMessage);
+
+	std::vector<ILogEndPoint*> m_RegisteredEndPoints; /** Store pointers to registered log end points. */
+	std::stringstream          m_szTempString;        /** Temporary storage of the output string, before being send to end points. */
 
 };//end Logger
 

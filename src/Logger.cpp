@@ -64,13 +64,13 @@ std::string Logger::GetMessageType(const LogLevel &eLevel)
 
 	switch (eLevel) {
 	case E_DEBUG:
-		szLevel = "[DEBUG]"; break;
+		szLevel = "[DEBUG]";   break;
 	case E_INFO:
-		szLevel = "[INFO]"; break;
+		szLevel = "[INFO]";    break;
 	case E_WARNING:
 		szLevel = "[WARNING]"; break;
 	case E_ERROR:
-		szLevel = "[ERROR]"; break;
+		szLevel = "[ERROR]";   break;
 	}
 
 	return szLevel;
@@ -81,8 +81,8 @@ std::string Logger::GetMessageType(const LogLevel &eLevel)
  /** Get the current time, for timestamping messages. */
 std::string Logger::GetTime()
 {
-	time_t currentTime = time(nullptr);
-	struct tm* localTime = localtime(&currentTime);
+	time_t     currentTime = time(nullptr);
+	struct tm* localTime   = localtime(&currentTime);
 
 	std::stringstream time;
 	time << "[" << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec << "]";
@@ -90,3 +90,19 @@ std::string Logger::GetTime()
 	return time.str();
 
 }//end GetTime()
+
+
+void Logger::RegisterEndPoint(ILogEndPoint* endpoint)
+{
+	this->m_RegisteredEndPoints.push_back(endpoint);
+
+}//end Logger::RegisterEndPoint()
+
+
+void Logger::SendToEndPoints(const std::string &szMessage)
+{
+	for (size_t i = 0; i < this->m_RegisteredEndPoints.size(); i++) {
+		this->m_RegisteredEndPoints[i]->WriteMessage(szMessage);
+	}
+
+}//end Logger::SendToEndPoints()
