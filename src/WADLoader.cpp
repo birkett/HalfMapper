@@ -20,9 +20,9 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
-#include <iostream>
 #include "WADLoader.h"
 #include "TextureLoader.h"
+#include "Logger.h"
 
 /**
  * Constructor.
@@ -59,7 +59,7 @@ int WADLoader::LoadTexturesFromWAD(const std::vector<std::string> &szGamePaths, 
 
 	// If the WAD wasn't found in any of the gamepaths...
 	if (!this->m_sWadFile.is_open()) {
-		std::cerr << "Can't load WAD " << szFilename << "." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Can't load WAD", szFilename);
 		return -1;
 	}
 

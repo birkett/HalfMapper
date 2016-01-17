@@ -20,7 +20,6 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
-#include <iostream>
 #include <algorithm>
 #include <SDL.h>
 #include "halfmapper.h"
@@ -28,6 +27,7 @@
 #include "WADLoader.h"
 #include "bsp.h"
 #include "ConfigXML.h"
+#include "Logger.h"
 
 
 /**
@@ -142,9 +142,9 @@ void HalfMapper::LoadMaps()
 		}
 	}
 
-	std::cout << mapCount << " maps found in config file." << std::endl;
-	std::cout << mapRenderCount << " maps to render - loaded in " << SDL_GetTicks() - ticks << " ms." << std::endl;
-	std::cout << "Total triangles: " << totalTris << std::endl;
+	Logger::GetInstance()->AddMessage(E_INFO, mapCount, "maps found in config file.");
+	Logger::GetInstance()->AddMessage(E_INFO, mapRenderCount, "maps to render - loaded in", SDL_GetTicks() - ticks, "ms");
+	Logger::GetInstance()->AddMessage(E_INFO, "Total triangles:", totalTris);
 
 }//end HalfMapper::LoadMaps()
 

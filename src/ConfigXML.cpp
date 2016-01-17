@@ -20,8 +20,8 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
-#include <iostream>
 #include "ConfigXML.h"
+#include "Logger.h"
 
 /**
  * Constructor to set some default values.
@@ -71,7 +71,7 @@ XMLError ConfigXML::LoadProgramConfig()
 			this->WriteDefaultProgramConfig();
 		}
 		else {
-			std::cout << "Error loading config.xml. Code " << eRetCode << std::endl;
+			Logger::GetInstance()->AddMessage(E_ERROR, "Error loading config.xml, code:", eRetCode);
 			return eRetCode;
 		}
 	}
@@ -79,14 +79,14 @@ XMLError ConfigXML::LoadProgramConfig()
 	XMLNode *rootNode = this->m_xmlProgramConfig.FirstChild();
 
 	if (rootNode == nullptr) {
-		std::cout << "Malformed XML. No root element." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Malformed XML. No root element.");
 		return XML_ERROR_FILE_READ_ERROR;
 	}
 
 	XMLElement *window = rootNode->FirstChildElement("window");
 
 	if (window == nullptr) {
-		std::cout << "Malformed XML. No window element." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Malformed XML. No window  element.");
 		return XML_ERROR_FILE_READ_ERROR;
 	}
 
@@ -130,28 +130,28 @@ XMLError ConfigXML::LoadMapConfig(const char *szFilename)
 	XMLError eRetCode = this->m_xmlMapConfig.LoadFile(szFilename);
 
 	if (eRetCode != XML_SUCCESS) {
-		std::cout << "Error loading map config. Code " << eRetCode << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "%s %i", "Error loading map config, code:", eRetCode);
 		return eRetCode;
 	}
 
 	XMLNode *rootNode = this->m_xmlMapConfig.FirstChild();
 
 	if (rootNode == nullptr) {
-		std::cout << "Malformed XML. No root element." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Malformed XML. No root element.");
 		return XML_ERROR_FILE_READ_ERROR;
 	}
 
 	XMLElement *wadsElement = rootNode->FirstChildElement("wads");
 
 	if (wadsElement == nullptr) {
-		std::cout << "Malformed XML. No wad container element." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Malformed XML. No wad container element.");
 		return XML_ERROR_FILE_READ_ERROR;
 	}
 
 	XMLElement *wad = wadsElement->FirstChildElement("wad");
 
 	if (wad == nullptr) {
-		std::cout << "Malformed XML. No wads element." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Malformed XML. No wads element.");
 		return XML_ERROR_FILE_READ_ERROR;
 	}
 
@@ -164,7 +164,7 @@ XMLError ConfigXML::LoadMapConfig(const char *szFilename)
 	XMLElement *chapter = rootNode->FirstChildElement("chapter");
 
 	if (chapter == nullptr) {
-		std::cout << "Malformed XML. No chapters found." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Malformed XML. No chapters found.");
 		return XML_ERROR_FILE_READ_ERROR;
 	}
 
@@ -174,7 +174,7 @@ XMLError ConfigXML::LoadMapConfig(const char *szFilename)
 		sChapterEntry.m_bRender = chapter->BoolAttribute("render");
 
 		if (sChapterEntry.m_szName == "") {
-			std::cout << "Malformed XML. Chapter found without name attribute." << std::endl;
+			Logger::GetInstance()->AddMessage(E_ERROR, "Malformed XMl. Chapter found without name attribute.");
 			return XML_ERROR_FILE_READ_ERROR;
 		}
 
@@ -194,7 +194,7 @@ XMLError ConfigXML::LoadMapConfig(const char *szFilename)
 			sMapEntry.m_bRender = map->BoolAttribute("render");
 
 			if (sMapEntry.m_szName == "") {
-				std::cout << "Malformed XML. Map found without name attribute." << std::endl;
+				Logger::GetInstance()->AddMessage(E_ERROR, "Malformed XML. Map found without name attribute.");
 				return XML_ERROR_FILE_READ_ERROR;
 			}
 
@@ -262,7 +262,7 @@ XMLError ConfigXML::WriteDefaultProgramConfig()
 	XMLError eRetCode = this->m_xmlProgramConfig.SaveFile("config.xml");
 
 	if (eRetCode != XML_SUCCESS) {
-		std::cout << "Error writing config.xml. Code " << eRetCode << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Error writing config.xml, code:", eRetCode);
 		return XML_ERROR_FILE_READ_ERROR;
 	}
 

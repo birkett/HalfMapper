@@ -1,6 +1,5 @@
 #include "util/MemoryDebugging.h"
 #include <cstring>
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -8,6 +7,7 @@
 #include "ConfigXML.h"
 #include "TextureLoader.h"
 #include "VideoSystem.h"
+#include "Logger.h"
 
 // These are global for now - needed so maps can know eachothers position.
 std::map<std::string, Vertex3f> offsets;
@@ -44,7 +44,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 
 	// If the BSP wasn't found in any of the gamepaths...
 	if (!this->m_sBSPFile.is_open()) {
-		std::cerr << "Can't open BSP " << this->m_szMapID << "." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Can't open BSP", this->m_szMapID.c_str());
 		return;
 	}
 
@@ -130,7 +130,7 @@ void BSP::CalculateOffset()
 							oz = + c2.z + c3.z - c1.z;
 
 							found = true;
-							std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i+1].second << std::endl;
+							Logger::GetInstance()->AddMessage(E_INFO, "Matched", (*it).second[i].second.c_str(), (*it).second[i + 1].second.c_str());
 							break;
 						}
 					}
@@ -144,7 +144,7 @@ void BSP::CalculateOffset()
 							oz = + c2.z + c3.z - c1.z;
 
 							found = true;
-							std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i-1].second << std::endl;
+							Logger::GetInstance()->AddMessage(E_INFO, "Matched", (*it).second[i].second, (*it).second[i - 1].second);
 							break;
 						}
 					}
@@ -153,7 +153,7 @@ void BSP::CalculateOffset()
 		}
 	}
 	if (!found) {
-		std::cout << "Cant find matching landmarks for " << this->m_szMapID << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Can't find landmarks for", this->m_szMapID.c_str());
 	}
 	offsets[this->m_szMapID] = Vertex3f(ox, oy, oz);
 }
@@ -193,7 +193,7 @@ void BSP::SetChapterOffset(const float x, const float y, const float z)
 bool BSP::IsValidBSPHeader(const BSPHeader &sHeader)
 {
 	if (sHeader.nVersion != 30) {
-		std::cerr << "BSP version is not 30 (" << this->m_szMapID << ")." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "BSP version is not 30:", this->m_szMapID.c_str());
 		return false;
 	}
 
@@ -226,7 +226,7 @@ void BSP::ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry)
 			}
 			else {
 				if (ss.good())
-					std::cerr << "Missing stuff in entity: " << str << std::endl;
+					Logger::GetInstance()->AddMessage(E_ERROR, "Missing stuff in entity:", str.c_str());
 			}
 		}
 		else if (status == 1) {
@@ -384,7 +384,7 @@ void BSP::GenerateLightMaps()
 		}
 
 		if (best + lmaps[i].h > 1024) {
-			std::cout << "Lightmap atlas is too small (" << this->m_szMapID << ")." << std::endl;
+			Logger::GetInstance()->AddMessage(E_ERROR, "Lightmap atlas is too small:", this->m_szMapID.c_str());
 			break;
 		}
 

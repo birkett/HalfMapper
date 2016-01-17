@@ -20,10 +20,10 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
-#include <iostream>
 #include <SDL.h>
 #include <GL/glew.h>
 #include "VideoSystem.h"
+#include "Logger.h"
 
 /**
  * Set the basic configuration of the window and renderer.
@@ -63,7 +63,7 @@ VideoSystem::~VideoSystem()
 int VideoSystem::Init()
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-		std::cerr << "Can't initialize SDL." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Can't initialize SDL.");
 		return -1;
 	}
 
@@ -78,21 +78,21 @@ int VideoSystem::Init()
 	this->sdlWindow = SDL_CreateWindow("HalfMapper (loading maps, please wait)", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->m_iWidth, this->m_iHeight, windowflags);
 
 	if (this->sdlWindow == NULL) {
-		std::cerr << "Can't create SDL window." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Can't create SDL window.");
 		return -1;
 	}
 
 	this->sdlGLContext = SDL_GL_CreateContext(this->sdlWindow);
 
 	if (this->sdlGLContext == NULL) {
-		std::cerr << "Can't create OpenGL Context." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Can't create OpenGL context.");
 		return -1;
 	}
 
 	SDL_GL_MakeCurrent(this->sdlWindow, this->sdlGLContext);
 
 	if (glewInit() != GLEW_OK) {
-		std::cerr << "Can't initialize Glew." << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "Can't initialize GLEW.");
 		return -1;
 	}
 
@@ -216,7 +216,7 @@ void VideoSystem::AddTexture(const unsigned int &iMipLevel, const unsigned int &
 	glTexImage2D(GL_TEXTURE_2D, iMipLevel, iFormatFlag, iWidth, iHeight, 0, iFormatFlag, GL_UNSIGNED_BYTE, pixels);
 
 	if (glGetError() != GL_NO_ERROR) {
-		std::cerr << "GL texture loading error, code " << glGetError() << std::endl;
+		Logger::GetInstance()->AddMessage(E_ERROR, "GL texture loading error, code:", glGetError());
 	}
 
 }//end VideoSystem::AddTexture()

@@ -20,9 +20,9 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
-#include <iostream>
 #include "TextureLoader.h"
 #include "VideoSystem.h"
+#include "Logger.h"
 
 
 /**
@@ -79,7 +79,7 @@ int TextureLoader::LoadTextures(const unsigned int &iNumberOfTextures, const uin
 			// Read each mipmap.
 			for(int mip = 3; mip >= 0; mip--) {
 				if (sTextureInfo.iOffsets[0] == 0 || sTextureInfo.iOffsets[1] == 0 || sTextureInfo.iOffsets[2] == 0 || sTextureInfo.iOffsets[3] == 0) {
-					std::cout << "Found WAD texture reference in BSP, but doesn't appear to be loaded: " << sTextureInfo.szName << std::endl;
+					Logger::GetInstance()->AddMessage(E_WARNING, "Found WAD texture reference in BSP, but doesn't appear to be loaded:", sTextureInfo.szName);
 					break;
 				}
 
