@@ -25,12 +25,22 @@
 #include <fstream>
 #include "ILogEndPoint.h"
 
+/**
+ * Print messages to an output log file.
+ */
 class CLogFileEndPoint : public ILogEndPoint
 {
 public:
+	/** Constructor. */
 	CLogFileEndPoint();
+
+	/** Destructor. */
 	~CLogFileEndPoint();
 
+	/**
+	 * Print a message to the output log file.
+	 * \param szMessage String to print.
+	 */
 	void WriteMessage(const std::string &szMessage);
 
 private:

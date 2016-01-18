@@ -22,18 +22,28 @@
 #include <iostream>
 #include "CLogConsoleEndPoint.h"
 
+/**
+ * Constructor.
+ */
 CLogConsoleEndPoint::CLogConsoleEndPoint()
 {
 
 }//end CLogConsoleEndPoint::CLogConsoleEndPoint()
 
 
+/**
+ * Destructor.
+ */
 CLogConsoleEndPoint::~CLogConsoleEndPoint()
 {
 
 }//end CLogConsoleEndPoint::~CLogConsoleEndPoint()
 
 
+/**
+ * Print a message to the console.
+ * \param szMessage String to print.
+ */
 void CLogConsoleEndPoint::WriteMessage(const std::string &szMessage)
 {
 	std::cout << szMessage << std::endl;

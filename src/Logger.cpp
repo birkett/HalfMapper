@@ -79,7 +79,9 @@ std::string Logger::GetMessageType(const LogLevel &eLevel)
 }//end Logger::GetMessageType()
 
 
- /** Get the current time, for timestamping messages. */
+/**
+ * Get the current time, for timestamping messages.
+ */
 std::string Logger::GetTime()
 {
 	std::time_t t = std::time(nullptr);
@@ -93,6 +95,10 @@ std::string Logger::GetTime()
 }//end GetTime()
 
 
+/**
+ * Add a new end point to the registered list.
+ * \param endpoint Pointer to the end point.
+ */
 void Logger::RegisterEndPoint(ILogEndPoint* endpoint)
 {
 	this->m_RegisteredEndPoints.push_back(endpoint);
@@ -100,6 +106,10 @@ void Logger::RegisterEndPoint(ILogEndPoint* endpoint)
 }//end Logger::RegisterEndPoint()
 
 
+/**
+ * Dispatch a message to all registered end points.
+ * \param szMessage String to send.
+ */
 void Logger::SendToEndPoints(const std::string &szMessage)
 {
 	for (size_t i = 0; i < this->m_RegisteredEndPoints.size(); i++) {

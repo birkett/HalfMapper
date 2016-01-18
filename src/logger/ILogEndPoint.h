@@ -26,12 +26,22 @@
 
 #define interface class
 
+/**
+ * Interface for log end points.
+ */
 interface ILogEndPoint
 {
 public:
+	/** Constructor. */
 	ILogEndPoint() {};
-	//virtual ~ILogEndPoint() = 0;
 
+	/** Destructor. */
+	virtual ~ILogEndPoint() {}
+
+	/**
+	 * Print messages using an end point.
+	 * \param szMessage String to send.
+	 */
 	virtual void WriteMessage(const std::string &szMessage) = 0;
 
 };//end ILogEndPoint

@@ -22,6 +22,9 @@
 #include "CLogFileEndPoint.h"
 
 
+/**
+ * Constrcutor.
+ */
 CLogFileEndPoint::CLogFileEndPoint()
 {
 	this->m_sFileStream.open("log.txt", std::ios::out);
@@ -29,6 +32,9 @@ CLogFileEndPoint::CLogFileEndPoint()
 }//end CLogFileEndPoint::CLogFileEndPoint()
 
 
+/**
+ * Destructor.
+ */
 CLogFileEndPoint::~CLogFileEndPoint()
 {
 	this->m_sFileStream.close();
@@ -36,6 +42,10 @@ CLogFileEndPoint::~CLogFileEndPoint()
 }//end CLogFileEndPoint::~CLogFileEndPoint()
 
 
+/**
+ * Print a message to the output log file.
+ * \param szMessage String to print.
+ */
 void CLogFileEndPoint::WriteMessage(const std::string &szMessage)
 {
 	if (this->m_sFileStream.is_open()) {

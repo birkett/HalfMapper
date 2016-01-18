@@ -37,6 +37,7 @@ enum LogLevel
 	E_INFO,
 	E_WARNING,
 	E_ERROR,
+
 };//end LogLevels
 
 
@@ -69,6 +70,10 @@ public:
 
 	}//end AddMessage()
 
+	/**
+	 * Add a new end point to the registered list.
+	 * \param endpoint Pointer to the end point.
+	 */
 	void RegisterEndPoint(ILogEndPoint* endpoint);
 
 private:
@@ -114,7 +119,13 @@ private:
 
 	}//end ConsolePrint()
 
+
+	/**
+	 * Dispatch a message to all registered end points.
+	 * \param szMessage String to send.
+	 */
 	void SendToEndPoints(const std::string &szMessage);
+
 
 	std::vector<ILogEndPoint*> m_RegisteredEndPoints; /** Store pointers to registered log end points. */
 	std::stringstream          m_szTempString;        /** Temporary storage of the output string, before being send to end points. */

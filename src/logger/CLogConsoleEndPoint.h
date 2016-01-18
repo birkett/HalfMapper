@@ -24,12 +24,22 @@
 
 #include "ILogEndPoint.h"
 
+/**
+ * Prints messages to the console window.
+ */
 class CLogConsoleEndPoint : public ILogEndPoint
 {
 public:
+	/** Constructor. */
 	CLogConsoleEndPoint();
+
+	/** Destructor. */
 	~CLogConsoleEndPoint();
 
+	/**
+	 * Print a message to the console.
+	 * \param szMessage String to print.
+	 */
 	void WriteMessage(const std::string &szMessage);
 
 };//end CLogConsoleEndPoint
