@@ -22,11 +22,22 @@
 #include <iostream>
 #include "CLogConsoleEndPoint.h"
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+	#include <Windows.h>
+#endif
+
+
 /**
  * Constructor.
  */
 CLogConsoleEndPoint::CLogConsoleEndPoint()
 {
+#if defined(_MSC_VER) || defined(__MINGW32__)
+	if (AllocConsole()) {
+		freopen("CONOUT$", "wt", stdout);
+		freopen("CONOUT$", "wt", stderr);
+	}
+#endif
 
 }//end CLogConsoleEndPoint::CLogConsoleEndPoint()
 
@@ -47,5 +58,12 @@ CLogConsoleEndPoint::~CLogConsoleEndPoint()
 void CLogConsoleEndPoint::WriteMessage(const std::string &szMessage)
 {
 	std::cout << szMessage << std::endl;
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+	#ifdef _DEBUG
+		OutputDebugString(szMessage.c_str());
+		OutputDebugString("\n");
+	#endif
+#endif
 
 }//end CLogConsoleEndPoint::WriteMessage()

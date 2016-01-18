@@ -73,3 +73,8 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${LOGGER_FILES} ${TINYXML2_FILES}
 
 #Add link libraries.
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${GLEW_LIBRARY})
+
+#Set linker flags on MSVC.
+if(MSVC)
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+endif(MSVC)
