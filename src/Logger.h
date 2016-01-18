@@ -64,6 +64,7 @@ public:
 	{
 		this->BufferString(this->GetTime(), this->GetMessageType(eLevel), szMessage, moreArgs...);
 		this->SendToEndPoints(this->m_szTempString.str());
+		this->m_szTempString.str("");
 		this->m_szTempString.clear();
 
 	}//end AddMessage()

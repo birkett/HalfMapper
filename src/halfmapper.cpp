@@ -68,7 +68,7 @@ HalfMapper::~HalfMapper()
 int HalfMapper::Run(const int iArgc, char* szArgv[])
 {
 	CLogConsoleEndPoint* console = new CLogConsoleEndPoint();
-	CLogFileEndPoint* fileout = new CLogFileEndPoint();
+	CLogFileEndPoint*    fileout = new CLogFileEndPoint();
 
 	Logger::GetInstance()->RegisterEndPoint(console);
 	Logger::GetInstance()->RegisterEndPoint(fileout);
@@ -99,6 +99,9 @@ int HalfMapper::Run(const int iArgc, char* szArgv[])
 	this->LoadMaps();
 
 	this->MainLoop();
+
+	delete console;
+	delete fileout;
 
 	return 0;
 

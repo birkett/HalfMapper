@@ -65,12 +65,6 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 	// Load surfaces, edges and surfedges.
 	this->LoadSurfEdges(sHeader);
 
-	// Read Lightmaps.
-	this->m_sBSPFile.seekg(sHeader.lump[LUMP_LIGHTING].iOffset, std::ios::beg);
-	int size = sHeader.lump[LUMP_LIGHTING].iLength;
-	lmap = new uint8_t[size];
-	this->m_sBSPFile.read((char*)lmap, size);
-
 	// Read Textures.
 	this->LoadTextures(sHeader);
 
@@ -302,11 +296,24 @@ void BSP::ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry)
 
 void BSP::LoadFacesAndLightMaps(const BSPHeader &sHeader)
 {
+	// Read Lightmaps.
+	this->m_sBSPFile.seekg(sHeader.lump[LUMP_LIGHTING].iOffset, std::ios::beg);
+	int size = sHeader.lump[LUMP_LIGHTING].iLength;
+	lmap = new uint8_t[size];
+	this->m_sBSPFile.read((char*)lmap, size);
+
+	// Read faces.
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_FACES].iOffset, std::ios::beg);
 
 	for (int i = 0; i < sHeader.lump[LUMP_FACES].iLength / (int)sizeof(BSPFace); i++) {
 		BSPFace f;
 		this->m_sBSPFile.read((char*)&f, sizeof(f));
+		
+		if (f.iLightmapOffset > size) {
+			Logger::GetInstance()->AddMessage(E_ERROR, "Lightmap offset too large:", "Map,", this->m_szMapID, "Lightmap size,", size, "Requested offset,", f.iLightmapOffset);
+			f.iLightmapOffset = 0;
+		}
+
 		BSPTEXTUREINFO b = m_btfs[f.iTextureInfo];
 		std::string faceTexName = this->m_vTexNames[b.iMiptex];
 

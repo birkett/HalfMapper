@@ -97,6 +97,7 @@ struct BSPLump
 {
 	int32_t iOffset; /** Byte offsets to the lump. */
 	int32_t iLength; /** Byte length of the lump. */
+
 };//end BSPLump
 
 
@@ -107,6 +108,7 @@ struct BSPHeader
 {
 	int32_t iVersion;           /** BSP version. 30 for Half-Life. */
 	BSPLump lump[HEADER_LUMPS]; /** Lump entries. */
+
 };//end BSPHeader
 
 
@@ -121,7 +123,8 @@ struct BSPFace
 	uint16_t iEdges;          /** Number of consecutive surfedges. */
 	uint16_t iTextureInfo;    /** Index of the texture info structure. */
 	uint8_t  iStyles[4];      /** Specify lighting styles. */
-	uint32_t iLightmapOffset; /** Offsets into the raw lightmap data. */
+	int32_t  iLightmapOffset; /** Offsets into the raw lightmap data. */
+
 };//end BSPFace
 
 
