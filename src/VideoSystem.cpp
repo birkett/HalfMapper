@@ -43,6 +43,7 @@ VideoSystem::VideoSystem(const int iWidth, const int iHeight, const float fFov, 
 	m_bFullscreen    = bFullscreen;
 	m_bMultisampling = bMultisampling;
 	m_bVsync         = bVsync;
+	m_iFrameStartMs  = SDL_GetTicks();
 
 }//end VideoSystem::VideoSystem()
 
@@ -314,6 +315,20 @@ void VideoSystem::EndFrame()
 	glPopMatrix();
 
 }//end VideoSystem::EndFrame()
+
+
+/**
+ * Calculate and return the current frame rate.
+ */
+float VideoSystem::GetFPS()
+{
+	int iFrameDelta = SDL_GetTicks() - this->m_iFrameStartMs;
+	this->m_iFrameStartMs = SDL_GetTicks();
+	float fFPS = 1000 / (float)iFrameDelta;
+
+	return fFPS;
+
+}//end VideoSystem::GetFPS()
 
 
 /**

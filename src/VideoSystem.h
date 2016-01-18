@@ -126,6 +126,9 @@ public:
 	/** Finish a frame. */
 	void EndFrame();
 
+	/** Calculate and return the current frame rate. */
+	float GetFPS();
+
 private:
 	/** Set the perspective of the viewport, and set some GL hints. */
 	void SetupViewport();
@@ -150,6 +153,7 @@ private:
 	bool          m_bVsync;         /** Vsync enable or disable. */
 	SDL_Window*   sdlWindow;        /** Pointer to the SDL Window. */
 	SDL_GLContext sdlGLContext;     /** Hold the SDL OpenGL Context. */
+	unsigned int  m_iFrameStartMs;  /** Frame start time, to work out the frame time delta. */
 
 };//end VideoSystem
 

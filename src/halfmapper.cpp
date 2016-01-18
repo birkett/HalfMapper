@@ -237,9 +237,6 @@ void HalfMapper::InputLoop()
  */
 void HalfMapper::MainLoop()
 {
-	int iFrameStartTime = SDL_GetTicks();
-	int iFrame          = 0;
-
 	while (!this->m_bShouldQuit) {
 		this->InputLoop();
 		this->m_VideoSystem->ClearBuffer();
@@ -253,17 +250,9 @@ void HalfMapper::MainLoop()
 
 		this->m_VideoSystem->SwapBuffers();
 
-		iFrame++;
-		if (iFrame == 30) {
-			iFrame = 0;
-
-			// Calculate framerate.
-			int iFrameDelta = SDL_GetTicks() - iFrameStartTime;
-			iFrameStartTime = SDL_GetTicks();
-			char bf[64];
-			sprintf(bf, "%.2f FPS - %.2f %.2f %.2f", 30000.0f / (float)iFrameDelta, this->m_fPosition.m_fX, this->m_fPosition.m_fY, this->m_fPosition.m_fZ);
-			this->m_VideoSystem->SetWindowTitle(bf);
-		}
+		char bf[64];
+		sprintf(bf, "%.2f FPS - %.2f %.2f %.2f", this->m_VideoSystem->GetFPS(), this->m_fPosition.m_fX, this->m_fPosition.m_fY, this->m_fPosition.m_fZ);
+		this->m_VideoSystem->SetWindowTitle(bf);
 	}//end while
 
 	SDL_Quit();
