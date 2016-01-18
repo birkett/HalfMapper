@@ -37,22 +37,30 @@ class  VideoSystem;
 // http://hlbsp.sourceforge.net/index.php?content=bspdef
 // http://nemesis.thewavelength.net/index.php?p=35
 
-#define LUMP_ENTITIES      0
-#define LUMP_PLANES        1
-#define LUMP_TEXTURES      2
-#define LUMP_VERTICES      3
-#define LUMP_VISIBILITY    4
-#define LUMP_NODES         5
-#define LUMP_TEXINFO       6
-#define LUMP_FACES         7
-#define LUMP_LIGHTING      8
-#define LUMP_CLIPNODES     9
-#define LUMP_LEAVES       10
-#define LUMP_MARKSURFACES 11
-#define LUMP_EDGES        12
-#define LUMP_SURFEDGES    13
-#define LUMP_MODELS       14
-#define HEADER_LUMPS      15
+/**
+ * List of lumps found in a valid v30 BSP.
+ */
+enum BSPLumpNames
+{
+	LUMP_ENTITIES = 0,
+	LUMP_PLANES,
+	LUMP_TEXTURES,
+	LUMP_VERTICES,
+	LUMP_VISIBILITY,
+	LUMP_NODES,
+	LUMP_TEXINFO,
+	LUMP_FACES,
+	LUMP_LIGHTING,
+	LUMP_CLIPNODES,
+	LUMP_LEAVES,
+	LUMP_MARKSURFACES,
+	LUMP_EDGES,
+	LUMP_SURFEDGES,
+	LUMP_MODELS,
+
+	LUMP_COUNT, // 15 total lumps.
+
+};//end BSPLumpNames
 
 
 /**
@@ -106,8 +114,8 @@ struct BSPLump
  */
 struct BSPHeader
 {
-	int32_t iVersion;           /** BSP version. 30 for Half-Life. */
-	BSPLump lump[HEADER_LUMPS]; /** Lump entries. */
+	int32_t iVersion;         /** BSP version. 30 for Half-Life. */
+	BSPLump lump[LUMP_COUNT]; /** Lump entries. */
 
 };//end BSPHeader
 
@@ -128,114 +136,239 @@ struct BSPFace
 };//end BSPFace
 
 
-struct BSPEDGE
+/**
+ * BSP Edge entry.
+ */
+struct BSPEdge
 {
-	uint16_t iVertex3f[2]; // Indices into Vertex3f array
-};
+	uint16_t iVertex3f[2]; /** Indices into Vertex3f array. */
 
-struct BSPTEXTUREINFO
-{
-	Vertex3f vS;
-	float fSShift;    // Texture shift in s direction
-	Vertex3f vT;
-	float fTShift;    // Texture shift in t direction
-	uint32_t iMiptex; // Index into textures array
-	uint32_t nFlags;  // Texture flags, seem to always be 0
-};
+};//end BSPEdge
 
-struct BSPTEXTUREHEADER
-{
-	uint32_t nMipTextures; // Number of BSPMIPTEX structures
-};
 
-#define MAX_MAP_HULLS 4
-struct BSPMODEL
+/**
+ * BSP texture information entry.
+ */
+struct BSPTextureInfo
 {
-    float nMins[3], nMaxs[3];          // Defines bounding box
-    Vertex3f vOrigin;                  // Coordinates to move the // coordinate system
-    int32_t iHeadnodes[MAX_MAP_HULLS]; // Index into nodes array
-    int32_t nVisLeafs;                 // ???
-    int32_t iFirstFace, nFaces;        // Index and count into faces
-};
+	Vertex3f vS;      /** S shift vector. */
+	float    fSShift; /** Texture shift in S direction. */
+	Vertex3f vT;      /** T shift vector. */
+	float    fTShift; /** Texture shift in T direction. */
+	uint32_t iMiptex; /** Index into textures array. */
+	uint32_t nFlags;  /** Texture flags, seem to always be 0. */
 
-struct COORDS
-{
-	float u, v;
-};
+};//end BSPTextureInfo
 
-struct VECFINAL
+
+/**
+ * BSP texture header.
+ */
+struct BSPTextureHeader
 {
-	float x,y,z,u,v,ul,vl;
-	VECFINAL(float _x, float _y, float _z, float _u, float _v){
+	uint32_t nMipTextures; /** Number of BSPMIPTEX structures. */
+
+};//end BSPTextureHeader
+
+
+/**
+ * BSP model entry.
+ */
+struct BSPModel
+{
+	#define MAX_MAP_HULLS 4
+
+	float    fMins[3];                  /** Bounding box minumum size. */
+	float    fMaxs[3];                  /** Bounding box maximum size. */
+    Vertex3f vOrigin;                   /** Model origin. */
+    int32_t  iHeadnodes[MAX_MAP_HULLS]; /** Index into nodes array. */
+    int32_t  nVisLeafs;                 /** ??? */
+	int32_t  iFirstFace;                /** Face index in the faces lump. */
+	int32_t  nFaces;                    /** Number of faces. */
+
+};//end BSPModel
+
+
+/**
+ * UV coordinates.
+ */
+struct UVCoordinates
+{
+	float u; /** U (X) position. */
+	float v; /** V (Y) position. */
+
+};//end UVCoordinates
+
+
+/**
+ * Final vector, with UV coordinates.
+ */
+struct VectorFinal
+{
+	float x;
+	float y;
+	float z;
+	float u;
+	float v;
+	float ul;
+	float vl;
+
+	/** Constructor. */
+	VectorFinal(float _x, float _y, float _z, float _u, float _v)
+	{
 		x = _x;
 		y = _y;
 		z = _z;
 		u = _u;
 		v = _v;
 	}
-	VECFINAL(Vertex3f vt, COORDS c, COORDS c2){
+
+	/** Constructor. */
+	VectorFinal(Vertex3f vt, UVCoordinates c, UVCoordinates c2)
+	{
 		x = vt.x, y = vt.y, z = vt.z;
 		u = c.u, v = c.v;
 		ul = c2.u;
 		vl = c2.v;
 	}
-};
 
-struct LMAP
+};//end VectorFinal
+
+
+/**
+ * BSP Lightmap.
+ */
+struct Lightmap
 {
-	unsigned char *offset; int w,h;
-	int finalX, finalY;
-};
+	unsigned char *offset;   /** Lightmap offset. */
+	int           m_iWidth;  /** Lightmap width. */
+	int           m_iHeight; /** Lightmap height. */
+	int           m_iFinalX; /** Lightmap X position. */
+	int           m_iFinalY; /** Lightmap Y position. */
 
-struct TEXSTUFF
+};//end Lightmap
+
+
+/**
+ * List of points, stored with their associated texture ID.
+ */
+struct TrianglePointMap
 {
-	std::vector<VECFINAL> triangles;
-	int texId;
-};
+	std::vector<VectorFinal> triangles; /** List of points. */
+	int                      texId;     /** Texture ID. */
 
+};//end TrianglePointMap
+
+
+/**
+ * Load a BSP file.
+ */
 class BSP
 {
 public:
+	/**
+	 * Contructor.
+	 * \param szGamePaths List of game paths to attempt loading from.
+	 * \param sMapEntry   MapEntry structure, containing config data for the current map.
+	 * \param videosystem Pointer to the video system.
+	 */
 	BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry, VideoSystem* &videosystem);
+
+	/** Destructor. */
 	~BSP();
+
+	/** Render this map. */
 	void Render();
+
+	/**
+	 * Set the offset, common to all maps in the same chapter.
+	 * \param x X offset.
+	 * \param y Y offset.
+	 * \param z Z offset.
+	 */
 	void SetChapterOffset(const float x, const float y, const float z);
-	size_t totalTris;
+
+
+	size_t totalTris; /** Total number of loaded triangles. */
 
 private:
+	/**
+	 * Calculate correct coordinates.
+	 * \param v      Base position vector.
+	 * \param vs     S position vector.
+	 * \param vt     T position vector.
+	 * \param sShift Offset in the S direction.
+	 * \param tShift Offset in the T direction.
+	 */
+	inline UVCoordinates CalculateCoordinates(Vertex3f v, Vertex3f vs, Vertex3f vt, float sShift, float tShift);
+
+	/** Calculate the map offset, using landmarks + chater and single map offsets. */
 	void CalculateOffset();
-	void ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry);
+
+	/**
+	 * Check if this is a valid v30 BSP.
+	 * \param sHeader BSP Header.
+	 */
 	bool IsValidBSPHeader(const BSPHeader &sHeader);
+
+	/**
+	 * Parse the entitities in the map.
+	 * \param sHeader   BSP Header.
+	 * \param sMapEntry MapEntry structure.
+	 */
+	void ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry);
+
+	/**
+	 * Load the faces and lightmaps.
+	 * \param sHeader BSP Header.
+	 */
 	void LoadFacesAndLightMaps(const BSPHeader &sHeader);
+
+	/** Generate the lightmap. */
 	void GenerateLightMaps();
+
+	/**
+	 * Load models from the map.
+	 * \param sHeader BSP Header.
+	 */
 	void LoadModels(const BSPHeader &sHeader);
+
+	/**
+	 * Load surfaces and edges.
+	 * \param sHeader BSP Header.
+	 */
 	void LoadSurfEdges(const BSPHeader &sHeader);
+
+	/**
+	 * Load textures stored in the map.
+	 * \param sHeader BSP Header.
+	 */
 	void LoadTextures(const BSPHeader &sHeader);
+
+	/**
+	 * Load the actual map geometry.
+	 * \param sHeader BSP Header.
+	 */
 	void LoadTris(const BSPHeader &sHeader);
 
-	VideoSystem* m_VideoSystem;
-
-	std::ifstream m_sBSPFile;
-
-	std::string m_szMapID;
-
-	unsigned char *lmapAtlas;
-	unsigned int lmapTexId;
-
-	std::vector<LMAP> lmaps;
-	std::map<std::string, TEXSTUFF> texturedTris;
-	unsigned int *bufObjects;
-	BSPTEXTUREINFO *m_btfs;
-	float *minUV;
-	float *maxUV;
-	uint8_t *lmap;
-
-	std::vector<std::string>  m_vTexNames; /** Vector of loaded texture names. */
-	std::map<std::string, std::vector<std::string> > m_vDontRenderModel;
-	std::map<int, bool> m_vDontRenderFace;
-	std::vector<Vertex3f> m_vVerticesPrime;
-
-	Vertex3f ConfigOffsetChapter;
+	
+	VideoSystem*                                     m_VideoSystem;       /** Pointer to the video system. */
+	std::ifstream                                    m_sBSPFile;          /** File stream. */
+	std::string                                      m_szMapID;           /** Map name. */
+	unsigned char*                                   lmapAtlas;           /** Lightmap atlas. */
+	unsigned int                                     lmapTexId;           /** Lightmap texture ID. */
+	std::vector<Lightmap>                            lmaps;               /** Loaded lightmaps. */
+	std::map<std::string, TrianglePointMap>          texturedTris;        /** Loaded map geometry. */
+	unsigned int*                                    bufObjects;          /** Geometry to be pushed to the vertex buffer. */
+	BSPTextureInfo*                                  m_btfs;              /** Texture info header. */
+	float*                                           minUV;               /** UV calculation. */
+	float*                                           maxUV;               /** UV calculation. */
+	uint8_t*                                         lmap;                /** Calculated lightmap for this map. */
+	std::vector<std::string>                         m_vTexNames;         /** Vector of loaded texture names. */
+	std::map<std::string, std::vector<std::string> > m_vDontRenderModel;  /** Vector of models to ignore rendering. */
+	std::map<int, bool>                              m_vDontRenderFace;   /** Vector of faces to ignore rendering. */
+	std::vector<Vertex3f>                            m_vVerticesPrime;    /** Loaded surfedges. */
+	Vertex3f                                         ConfigOffsetChapter; /** Offset for all maps in the same chapter. */
 
 };//end BSP
 

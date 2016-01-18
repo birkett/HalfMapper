@@ -1,3 +1,24 @@
+/*
+ * halfmapper, a renderer for GoldSrc maps and chapters.
+ *
+ * Copyright(C) 2014  Gonzalo Ávila "gzalo" Alterach
+ * Copyright(C) 2015  Anthony "birkett" Birkett
+ *
+ * This file is part of halfmapper.
+ *
+ * This program is free software; you can redistribute it and / or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see http://www.gnu.org/licenses/
+ */
 #include "util/MemoryDebugging.h"
 #include "logger/Logger.h"
 #include <cstring>
@@ -9,29 +30,20 @@
 #include "TextureLoader.h"
 #include "VideoSystem.h"
 
+
 // These are global for now - needed so maps can know eachothers position.
 std::map<std::string, Vertex3f> offsets;
 std::map<std::string, std::vector<std::pair<Vertex3f, std::string>>> vLandmarks;
 
 
-//Correct UV coordinates
-static inline COORDS calcCoords(Vertex3f v, Vertex3f vs, Vertex3f vt, float sShift, float tShift){
-	COORDS ret;
-	ret.u = sShift + vs.x*v.x + vs.y*v.y + vs.z*v.z;
-	ret.v = tShift + vt.x*v.x + vt.y*v.y + vt.z*v.z;
-	return ret;
-}
-
-BSP::~BSP()
+/**
+ * Contructor.
+ * \param szGamePaths List of game paths to attempt loading from.
+ * \param sMapEntry   MapEntry structure, containing config data for the current map.
+ * \param videosystem Pointer to the video system.
+ */
+BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry, VideoSystem* &videosystem)
 {
-	delete[] bufObjects;
-	delete[] minUV;
-	delete[] maxUV;
-	delete[] lmap;
-}
-
-
-BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry, VideoSystem* &videosystem){
 	this->m_szMapID     = sMapEntry.m_szName;
 	this->m_VideoSystem = videosystem;
 
@@ -70,7 +82,7 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 
 	// Read Texture information.
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_TEXINFO].iOffset, std::ios::beg);
-	m_btfs = new BSPTEXTUREINFO[sHeader.lump[LUMP_TEXINFO].iLength / (int)sizeof(BSPTEXTUREINFO)];
+	m_btfs = new BSPTextureInfo[sHeader.lump[LUMP_TEXINFO].iLength / (int)sizeof(BSPTextureInfo)];
 	this->m_sBSPFile.read((char*)m_btfs, sHeader.lump[LUMP_TEXINFO].iLength);
 
 	minUV = new float[sHeader.lump[LUMP_FACES].iLength/(int)sizeof(BSPFace)*2];
@@ -93,15 +105,92 @@ BSP::BSP(const std::vector<std::string> &szGamePaths, const MapEntry &sMapEntry,
 
 	this->m_VideoSystem->CreateBuffer(texturedTris.size(), bufObjects);
 
-	int i = 0;
+	int i     = 0;
 	totalTris = 0;
-	for(std::map<std::string, TEXSTUFF>::iterator it = texturedTris.begin(); it != texturedTris.end(); it++, i++) {
-		this->m_VideoSystem->AddDataToBuffer(bufObjects[i], (*it).second.triangles.size() * sizeof(VECFINAL), (void*)&(*it).second.triangles[0]);
+	for(std::map<std::string, TrianglePointMap>::iterator it = texturedTris.begin(); it != texturedTris.end(); it++, i++) {
+		this->m_VideoSystem->AddDataToBuffer(bufObjects[i], (*it).second.triangles.size() * sizeof(VectorFinal), (void*)&(*it).second.triangles[0]);
 		totalTris += (*it).second.triangles.size();
 	}
-}
+
+}//end BSP::BSP()
 
 
+/**
+ * Destructor.
+ */
+BSP::~BSP()
+{
+	delete[] bufObjects;
+	delete[] minUV;
+	delete[] maxUV;
+	delete[] lmap;
+
+}//end BSP::~BSP()
+
+
+/**
+ * Render this map.
+ */
+void BSP::Render()
+{
+	this->m_VideoSystem->BeginFrame(offsets[this->m_szMapID].x + ConfigOffsetChapter.x, offsets[this->m_szMapID].y + ConfigOffsetChapter.y, offsets[this->m_szMapID].z + ConfigOffsetChapter.z, lmapTexId);
+
+	int i = 0;
+	for (std::map<std::string, TrianglePointMap>::iterator it = texturedTris.begin(); it != texturedTris.end(); it++, i++) {
+		// Don't render some dummy triangles (triggers and such).
+		if ((*it).first != "aaatrigger"
+			&& (*it).first != "origin"
+			&& (*it).first != "clip"
+			&& (*it).first != "sky"
+			&& (*it).first[0] != '{'
+			&& (*it).second.triangles.size() != 0
+			) {
+			this->m_VideoSystem->PushData(bufObjects[i], (*it).second.texId, sizeof(VectorFinal), (*it).second.triangles.size());
+		}
+	}
+
+	this->m_VideoSystem->EndFrame();
+
+}//end BSP::Render()
+
+
+/**
+ * Set the offset, common to all maps in the same chapter.
+ * \param x X offset.
+ * \param y Y offset.
+ * \param z Z offset.
+ */
+void BSP::SetChapterOffset(const float x, const float y, const float z)
+{
+	ConfigOffsetChapter.x = x;
+	ConfigOffsetChapter.y = y;
+	ConfigOffsetChapter.z = z;
+
+}//end BSP::SetChapterOffset()
+
+
+/**
+ * Calculate correct coordinates.
+ * \param v      Base position vector.
+ * \param vs     S position vector.
+ * \param vt     T position vector.
+ * \param sShift Offset in the S direction.
+ * \param tShift Offset in the T direction.
+ */
+inline UVCoordinates BSP::CalculateCoordinates(Vertex3f v, Vertex3f vs, Vertex3f vt, float sShift, float tShift)
+{
+	UVCoordinates ret;
+	ret.u = sShift + (vs.x * v.x) + (vs.y * v.y) + (vs.z * v.z);
+	ret.v = tShift + (vt.x * v.x) + (vt.y * v.y) + (vt.z * v.z);
+
+	return ret;
+
+}//end CalculateCoordinates()
+
+
+/**
+ * Calculate the map offset, using landmarks + chater and single map offsets.
+ */
 void BSP::CalculateOffset()
 {
 	float ox = 0.0f;
@@ -150,40 +239,14 @@ void BSP::CalculateOffset()
 		Logger::GetInstance()->AddMessage(E_ERROR, "Can't find landmarks for", this->m_szMapID.c_str());
 	}
 	offsets[this->m_szMapID] = Vertex3f(ox, oy, oz);
-}
+
+}//end BSP::CalculateOffset()
 
 
-void BSP::Render()
-{
-	this->m_VideoSystem->BeginFrame(offsets[this->m_szMapID].x + ConfigOffsetChapter.x, offsets[this->m_szMapID].y + ConfigOffsetChapter.y, offsets[this->m_szMapID].z + ConfigOffsetChapter.z, lmapTexId);
-
-	int i = 0;
-	for (std::map<std::string, TEXSTUFF>::iterator it = texturedTris.begin(); it != texturedTris.end(); it++, i++) {
-		// Don't render some dummy triangles (triggers and such).
-		if ((*it).first != "aaatrigger"
-			&& (*it).first != "origin"
-			&& (*it).first != "clip"
-			&& (*it).first != "sky"
-			&& (*it).first[0]!='{'
-			&& (*it).second.triangles.size() != 0
-		) {
-			this->m_VideoSystem->PushData(bufObjects[i], (*it).second.texId, sizeof(VECFINAL), (*it).second.triangles.size());
-		}
-	}
-
-	this->m_VideoSystem->EndFrame();
-
-}
-
-
-void BSP::SetChapterOffset(const float x, const float y, const float z)
-{
-	ConfigOffsetChapter.x = x;
-	ConfigOffsetChapter.y = y;
-	ConfigOffsetChapter.z = z;
-}
-
-
+/**
+ * Check if this is a valid v30 BSP.
+ * \param sHeader BSP Header.
+ */
 bool BSP::IsValidBSPHeader(const BSPHeader &sHeader)
 {
 	if (sHeader.iVersion != 30) {
@@ -192,9 +255,15 @@ bool BSP::IsValidBSPHeader(const BSPHeader &sHeader)
 	}
 
 	return true;
-}
+
+}//end BSP::IsValidBSPHeader()
 
 
+/**
+ * Parse the entitities in the map.
+ * \param sHeader   BSP Header.
+ * \param sMapEntry MapEntry structure.
+ */
 void BSP::ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry)
 {
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_ENTITIES].iOffset, std::ios::beg);
@@ -291,9 +360,14 @@ void BSP::ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry)
 	}
 
 	delete[] szEntitiesLump;
-}
+
+}//end BSP::ParseEntities()
 
 
+/**
+ * Load the faces and lightmaps.
+ * \param sHeader BSP Header.
+ */
 void BSP::LoadFacesAndLightMaps(const BSPHeader &sHeader)
 {
 	// Read Lightmaps.
@@ -314,7 +388,7 @@ void BSP::LoadFacesAndLightMaps(const BSPHeader &sHeader)
 			f.iLightmapOffset = 0;
 		}
 
-		BSPTEXTUREINFO b = m_btfs[f.iTextureInfo];
+		BSPTextureInfo b = m_btfs[f.iTextureInfo];
 		std::string faceTexName = this->m_vTexNames[b.iMiptex];
 
 		minUV[i * 2] = minUV[i * 2 + 1] = 99999;
@@ -325,9 +399,9 @@ void BSP::LoadFacesAndLightMaps(const BSPHeader &sHeader)
 			Vertex3f v2 = this->m_vVerticesPrime[f.iFirstEdge + k];
 			Vertex3f v3 = this->m_vVerticesPrime[f.iFirstEdge + j];
 
-			COORDS c1 = calcCoords(v1, b.vS, b.vT, b.fSShift, b.fTShift);
-			COORDS c2 = calcCoords(v2, b.vS, b.vT, b.fSShift, b.fTShift);
-			COORDS c3 = calcCoords(v3, b.vS, b.vT, b.fSShift, b.fTShift);
+			UVCoordinates c1 = this->CalculateCoordinates(v1, b.vS, b.vT, b.fSShift, b.fTShift);
+			UVCoordinates c2 = this->CalculateCoordinates(v2, b.vS, b.vT, b.fSShift, b.fTShift);
+			UVCoordinates c3 = this->CalculateCoordinates(v3, b.vS, b.vT, b.fSShift, b.fTShift);
 
 			minUV[i * 2] = std::min(minUV[i * 2], c1.u); minUV[i * 2 + 1] = std::min(minUV[i * 2 + 1], c1.v);
 			minUV[i * 2] = std::min(minUV[i * 2], c2.u); minUV[i * 2 + 1] = std::min(minUV[i * 2 + 1], c2.v);
@@ -345,16 +419,20 @@ void BSP::LoadFacesAndLightMaps(const BSPHeader &sHeader)
 			lmw = lmh = 1;
 		}
 
-		LMAP l;
-		l.w = lmw;
-		l.h = lmh;
+		Lightmap l;
+		l.m_iWidth = lmw;
+		l.m_iHeight = lmh;
 		l.offset = lmap + f.iLightmapOffset;
 
 		lmaps.push_back(l);
 	}
-}
+
+}//end BSP::LoadFacesAndLightMaps()
 
 
+/**
+ * Generate the lightmap.
+ */
 void BSP::GenerateLightMaps()
 {
 	//Light map atlas
@@ -373,10 +451,10 @@ void BSP::GenerateLightMaps()
 		int best  = 1024;
 		int best2 = 0;
 
-		for (int a = 0; a < 1024 - lmaps[i].w; a++) {
+		for (int a = 0; a < 1024 - lmaps[i].m_iWidth; a++) {
 			int j = 0;
 
-			for (j = 0; j < lmaps[i].w; j++) {
+			for (j = 0; j < lmaps[i].m_iWidth; j++) {
 				if (lmapRover[a + j] >= best) {
 					break;
 				}
@@ -384,29 +462,29 @@ void BSP::GenerateLightMaps()
 					best2 = lmapRover[a + j];
 				}
 			}
-			if (j == lmaps[i].w) {
-				lmaps[i].finalX = a;
-				lmaps[i].finalY = best = best2;
+			if (j == lmaps[i].m_iWidth) {
+				lmaps[i].m_iFinalX = a;
+				lmaps[i].m_iFinalY = best = best2;
 			}
 		}
 
-		if (best + lmaps[i].h > 1024) {
+		if (best + lmaps[i].m_iHeight > 1024) {
 			Logger::GetInstance()->AddMessage(E_ERROR, "Lightmap atlas is too small:", this->m_szMapID.c_str());
 			break;
 		}
 
-		for (int a = 0; a < lmaps[i].w; a++) {
-			lmapRover[lmaps[i].finalX + a] = best + lmaps[i].h;
+		for (int a = 0; a < lmaps[i].m_iWidth; a++) {
+			lmapRover[lmaps[i].m_iFinalX + a] = best + lmaps[i].m_iHeight;
 		}
 
-		int finalX = lmaps[i].finalX;
-		int finalY = lmaps[i].finalY;
+		int finalX = lmaps[i].m_iFinalX;
+		int finalY = lmaps[i].m_iFinalY;
 
 		#define ATXY(_x,_y) ((_x) + ((_y) * 1024))       *3
-		#define LMXY(_x,_y) ((_x) + ((_y) * lmaps[i].w)) *3
+		#define LMXY(_x,_y) ((_x) + ((_y) * lmaps[i].m_iWidth)) *3
 
-		for (int y = 0; y < lmaps[i].h; y++) {
-			for (int x = 0; x < lmaps[i].w; x++) {
+		for (int y = 0; y < lmaps[i].m_iHeight; y++) {
+			for (int x = 0; x < lmaps[i].m_iWidth; x++) {
 				lmapAtlas[ATXY(finalX + x, finalY + y) + 0] = gammaTable[lmaps[i].offset[LMXY(x, y) + 0]];
 				lmapAtlas[ATXY(finalX + x, finalY + y) + 1] = gammaTable[lmaps[i].offset[LMXY(x, y) + 1]];
 				lmapAtlas[ATXY(finalX + x, finalY + y) + 2] = gammaTable[lmaps[i].offset[LMXY(x, y) + 2]];
@@ -418,12 +496,17 @@ void BSP::GenerateLightMaps()
 	this->m_VideoSystem->AddTexture(0, 1024, 1024, lmapAtlas, true);
 
 	delete[] lmapAtlas;
-}
+
+}//end BSP::GenerateLightmap()
 
 
+/**
+ * Load models from the map.
+ * \param sHeader BSP Header.
+ */
 void BSP::LoadModels(const BSPHeader &sHeader)
 {
-	BSPMODEL *models = new BSPMODEL[sHeader.lump[LUMP_MODELS].iLength / (int)sizeof(BSPMODEL)];
+	BSPModel *models = new BSPModel[sHeader.lump[LUMP_MODELS].iLength / (int)sizeof(BSPModel)];
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_MODELS].iOffset, std::ios::beg);
 	this->m_sBSPFile.read((char*)models, sHeader.lump[LUMP_MODELS].iLength);
 
@@ -436,9 +519,14 @@ void BSP::LoadModels(const BSPHeader &sHeader)
 	}
 
 	delete[] models;
-}
+
+}//end BSP::LoadModels()
 
 
+/**
+ * Load surfaces and edges.
+ * \param sHeader BSP Header.
+ */
 void BSP::LoadSurfEdges(const BSPHeader &sHeader)
 {
 	// Read Vertices.
@@ -451,7 +539,7 @@ void BSP::LoadSurfEdges(const BSPHeader &sHeader)
 	}
 
 	// Read Edges.
-	BSPEDGE *edges = new BSPEDGE[sHeader.lump[LUMP_EDGES].iLength / (int)sizeof(BSPEDGE)];
+	BSPEdge *edges = new BSPEdge[sHeader.lump[LUMP_EDGES].iLength / (int)sizeof(BSPEdge)];
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_EDGES].iOffset, std::ios::beg);
 	this->m_sBSPFile.read((char*)edges, sHeader.lump[LUMP_EDGES].iLength);
 
@@ -464,13 +552,18 @@ void BSP::LoadSurfEdges(const BSPHeader &sHeader)
 	}
 
 	delete[] edges;
-}
+
+}//end BSP::LoadSurfEdges()
 
 
+/**
+ * Load textures stored in the map.
+ * \param sHeader BSP Header.
+ */
 void BSP::LoadTextures(const BSPHeader &sHeader)
 {
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_TEXTURES].iOffset, std::ios::beg);
-	BSPTEXTUREHEADER theader;
+	BSPTextureHeader theader;
 	this->m_sBSPFile.read((char*)&theader, sizeof(theader));
 	int *texOffSets = new int[theader.nMipTextures];
 	this->m_sBSPFile.read((char*)texOffSets, theader.nMipTextures * sizeof(int));
@@ -493,9 +586,14 @@ void BSP::LoadTextures(const BSPHeader &sHeader)
 
 	delete[] iOffsets;
 	delete[] texOffSets;
-}
+
+}//end BSP::LoadTextures()
 
 
+/**
+ * Load the actual map geometry.
+ * \param sHeader BSP Header.
+ */
 void BSP::LoadTris(const BSPHeader &sHeader)
 {
 	this->m_sBSPFile.seekg(sHeader.lump[LUMP_FACES].iOffset, std::ios::beg);
@@ -507,7 +605,7 @@ void BSP::LoadTris(const BSPHeader &sHeader)
 			continue;
 		}
 
-		BSPTEXTUREINFO b = m_btfs[f.iTextureInfo];
+		BSPTextureInfo b = m_btfs[f.iTextureInfo];
 
 		std::string faceTexName = this->m_vTexNames[b.iMiptex];
 
@@ -525,23 +623,23 @@ void BSP::LoadTris(const BSPHeader &sHeader)
 		float mid_tex_s = (float)lmw / 2.0f;
 		float mid_tex_t = (float)lmh / 2.0f;
 
-		float fX = (float)lmaps[i].finalX;
-		float fY = (float)lmaps[i].finalY;
+		float fX = (float)lmaps[i].m_iFinalX;
+		float fY = (float)lmaps[i].m_iFinalY;
 
 		Texture sTex = TextureLoader::GetInstance()->m_vLoadedTextures[faceTexName];
 
-		std::vector<VECFINAL>*vt = &texturedTris[faceTexName].triangles;
+		std::vector<VectorFinal>*vt = &texturedTris[faceTexName].triangles;
 
 		for (int j = 2, k = 1; j < f.iEdges; j++, k++) {
 			Vertex3f v1 = this->m_vVerticesPrime[f.iFirstEdge];
 			Vertex3f v2 = this->m_vVerticesPrime[f.iFirstEdge + k];
 			Vertex3f v3 = this->m_vVerticesPrime[f.iFirstEdge + j];
 
-			COORDS c1 = calcCoords(v1, b.vS, b.vT, b.fSShift, b.fTShift);
-			COORDS c2 = calcCoords(v2, b.vS, b.vT, b.fSShift, b.fTShift);
-			COORDS c3 = calcCoords(v3, b.vS, b.vT, b.fSShift, b.fTShift);
+			UVCoordinates c1 = this->CalculateCoordinates(v1, b.vS, b.vT, b.fSShift, b.fTShift);
+			UVCoordinates c2 = this->CalculateCoordinates(v2, b.vS, b.vT, b.fSShift, b.fTShift);
+			UVCoordinates c3 = this->CalculateCoordinates(v3, b.vS, b.vT, b.fSShift, b.fTShift);
 
-			COORDS c1l, c2l, c3l;
+			UVCoordinates c1l, c2l, c3l;
 
 			c1l.u = mid_tex_s + (c1.u - mid_poly_s) / 16.0f;
 			c2l.u = mid_tex_s + (c2.u - mid_poly_s) / 16.0f;
@@ -563,12 +661,13 @@ void BSP::LoadTris(const BSPHeader &sHeader)
 			v2.FixHand();
 			v3.FixHand();
 
-			vt->push_back(VECFINAL(v1, c1, c1l));
-			vt->push_back(VECFINAL(v2, c2, c2l));
-			vt->push_back(VECFINAL(v3, c3, c3l));
+			vt->push_back(VectorFinal(v1, c1, c1l));
+			vt->push_back(VectorFinal(v2, c2, c2l));
+			vt->push_back(VectorFinal(v3, c3, c3l));
 		}
 		texturedTris[faceTexName].texId = TextureLoader::GetInstance()->m_vLoadedTextures[faceTexName].iTextureId;
 	}
 
 	delete[] m_btfs;
-}
+
+}//end BSP::LoadTris()

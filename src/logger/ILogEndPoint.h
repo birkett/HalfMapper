@@ -24,12 +24,13 @@
 
 #include <string>
 
-#define interface class
+#define abstract_class class
+
 
 /**
  * Interface for log end points.
  */
-interface ILogEndPoint
+abstract_class ILogEndPoint
 {
 public:
 	/** Constructor. */

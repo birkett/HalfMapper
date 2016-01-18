@@ -166,14 +166,10 @@ void HalfMapper::LoadMaps()
 void HalfMapper::InputLoop()
 {
 	static const Uint8* keystate = nullptr;
-	static float        fLeft    = 0.0f;
-	static float        fFrontal = 0.0f;
-	static int          iSpeed   = 8;
 
-	// Reset these on every loop back to defaults.
-	fLeft    = 0.0f;
-	fFrontal = 0.0f;
-	iSpeed   = 8;
+	float fLeft    = 0.0f;
+	float fFrontal = 0.0f;
+	int   iSpeed   = 8;
 
 	// Handle movement with the keyboard state. Cleaner than checking SDL_KEYUP and SDL_KEYDOWN.
 	keystate = SDL_GetKeyboardState(NULL);
