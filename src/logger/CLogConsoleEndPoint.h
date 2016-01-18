@@ -20,7 +20,7 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #ifndef CLOGCONSOLEENDPOINT_H
-#define CLOGCONSOLENEDPOINT_H
+#define CLOGCONSOLEENDPOINT_H
 
 #include "ILogEndPoint.h"
 
@@ -44,4 +44,4 @@ public:
 
 };//end CLogConsoleEndPoint
 
-#endif //CLOGCONSOLENEDPOINT_H
+#endif //CLOGCONSOLEENDPOINT_H

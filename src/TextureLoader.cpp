@@ -21,6 +21,7 @@
  */
 #include "util/MemoryDebugging.h"
 #include "logger/Logger.h"
+#include <memory>
 #include "TextureLoader.h"
 #include "VideoSystem.h"
 
