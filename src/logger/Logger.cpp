@@ -22,7 +22,6 @@
 #include <memory>
 #include <ctime>
 #include <sstream>
-#include <iomanip>
 #include "Logger.h"
 
 
@@ -84,11 +83,15 @@ std::string Logger::GetMessageType(const LogLevel &eLevel)
  */
 std::string Logger::GetTime()
 {
-	std::time_t t = std::time(nullptr);
-	std::tm tm    = *std::localtime(&t);
+	time_t t             = time(nullptr);
+	struct tm* localTime = localtime(&t);
+
+	char szTimestamp[9];
+	strftime(szTimestamp, 9, "%T", localTime);
 
 	std::stringstream time;
-	time << "[" << std::put_time(&tm, "%T") << "]";
+
+	time << "[" << szTimestamp << "]";
 
 	return time.str();
 
