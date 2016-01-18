@@ -20,9 +20,10 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
+#include "logger/Logger.h"
 #include "WADLoader.h"
 #include "TextureLoader.h"
-#include "Logger.h"
+
 
 /**
  * Constructor.

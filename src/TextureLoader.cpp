@@ -20,9 +20,9 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
+#include "logger/Logger.h"
 #include "TextureLoader.h"
 #include "VideoSystem.h"
-#include "Logger.h"
 
 
 /**

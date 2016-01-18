@@ -26,7 +26,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "logger/ILogEndPoint.h"
+#include "ILogEndPoint.h"
 
 /**
  * Log levels for specifying message types.

@@ -20,10 +20,11 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
+#include "logger/Logger.h"
 #include <SDL.h>
 #include <GL/glew.h>
 #include "VideoSystem.h"
-#include "Logger.h"
+
 
 /**
  * Set the basic configuration of the window and renderer.

@@ -1,4 +1,5 @@
 #include "util/MemoryDebugging.h"
+#include "logger/Logger.h"
 #include <cstring>
 #include <fstream>
 #include <sstream>
@@ -7,7 +8,6 @@
 #include "ConfigXML.h"
 #include "TextureLoader.h"
 #include "VideoSystem.h"
-#include "Logger.h"
 
 // These are global for now - needed so maps can know eachothers position.
 std::map<std::string, Vertex3f> offsets;

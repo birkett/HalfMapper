@@ -20,6 +20,9 @@
  * along with this program. If not, see http://www.gnu.org/licenses/
  */
 #include "util/MemoryDebugging.h"
+#include "logger/Logger.h"
+#include "logger/CLogConsoleEndPoint.h"
+#include "logger/CLogFileEndPoint.h"
 #include <algorithm>
 #include <SDL.h>
 #include "halfmapper.h"
@@ -27,9 +30,6 @@
 #include "WADLoader.h"
 #include "bsp.h"
 #include "ConfigXML.h"
-#include "Logger.h"
-#include "logger/CLogConsoleEndPoint.h"
-#include "logger/CLogFileEndPoint.h"
 
 
 /**
