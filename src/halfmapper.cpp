@@ -40,6 +40,10 @@ HalfMapper::HalfMapper()
 	this->m_bShouldQuit  = false;
 	this->m_fIsoBounds   = 1000.0;
 
+	this->m_XMLConfiguration = nullptr;
+	this->m_VideoSystem      = nullptr;
+	this->m_WADLoader        = nullptr;
+
 }//end HalfMapper::HalfMapper()
 
 

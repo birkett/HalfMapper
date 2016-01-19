@@ -45,7 +45,7 @@ public:
 	 * \param bMultisampling Enable or disable multisampling.
 	 * \param bVsync         Enable or disable Vsync.
 	 */
-	VideoSystem(const int iWidth, const int iHeight, const float fFov, const bool bFullscreen, const bool bMultisampling, const bool bVsync);
+	VideoSystem(const int &iWidth, const int &iHeight, const float &fFov, const bool &bFullscreen, const bool &bMultisampling, const bool &bVsync);
 
 	/** Destructor */
 	~VideoSystem();
@@ -66,7 +66,7 @@ public:
 	 * \param fRotation  Angle of the camera.
 	 * \param fIsoBounds Orthographic boundaries.
 	 */
-	void SetCamera(const bool bIsometric, const Point3f fPosition, const Point2f fRotation, const float fIsoBounds);
+	void SetCamera(const bool &bIsometric, const Point3f &fPosition, const Point2f &fRotation, const float &fIsoBounds);
 
 	/**
 	 * Set the title of the program window.
@@ -103,7 +103,7 @@ public:
 	 * \param iDataSize Total size of the data to add.
 	 * \param data      Raw data.
 	 */
-	void AddDataToBuffer(const unsigned int objects, const size_t &iDataSize, const void* data);
+	void AddDataToBuffer(const unsigned int &objects, const size_t &iDataSize, const void* data);
 
 	/**
 	 * Begin a frame, by translating to the correct poisiton and setting the global lightmap.
@@ -112,7 +112,7 @@ public:
 	 * \param z          Z translation.
 	 * \param iTextureId Lightmap ID.
 	 */
-	void BeginFrame(const float &x, const float &y, const float &z, const unsigned int iTextureId);
+	void BeginFrame(const float &x, const float &y, const float &z, const unsigned int &iTextureId);
 
 	/**
 	* Push data to be rendered.
@@ -121,7 +121,7 @@ public:
 	* \param iDataSize      Size of each data point.
 	* \param iDataArraySize Total size of the data array.
 	*/
-	void PushData(const unsigned int objects, const unsigned int iTextureId, const unsigned int iDataSize, const size_t iDataArraySize);
+	void PushData(const unsigned int &objects, const unsigned int &iTextureId, const unsigned int &iDataSize, const size_t &iDataArraySize);
 
 	/** Finish a frame. */
 	void EndFrame();
@@ -137,13 +137,13 @@ private:
 	 * Enable or disable multisampling for the GL context.
 	 * \param bEnable Enable or Disable.
 	 */
-	void SetMultisampling(const bool bEnable);
+	void SetMultisampling(const bool &bEnable);
 
 	/**
 	* Enable or disable Vsync for the GL context.
 	* \param bEnable Enable or Disable.
 	*/
-	void SetVsync(const bool bEnable);
+	void SetVsync(const bool &bEnable);
 
 	unsigned int  m_iWidth;         /** Window width. */
 	unsigned int  m_iHeight;        /** Window height. */

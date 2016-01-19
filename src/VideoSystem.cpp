@@ -35,7 +35,7 @@
  * \param bMultisampling Enable or disable multisampling.
  * \param bVsync         Enable or disable Vsync.
  */
-VideoSystem::VideoSystem(const int iWidth, const int iHeight, const float fFov, const bool bFullscreen, const bool bMultisampling, const bool bVsync)
+VideoSystem::VideoSystem(const int &iWidth, const int &iHeight, const float &fFov, const bool &bFullscreen, const bool &bMultisampling, const bool &bVsync)
 {
 	m_iWidth         = iWidth;
 	m_iHeight        = iHeight;
@@ -44,6 +44,9 @@ VideoSystem::VideoSystem(const int iWidth, const int iHeight, const float fFov, 
 	m_bMultisampling = bMultisampling;
 	m_bVsync         = bVsync;
 	m_iFrameStartMs  = SDL_GetTicks();
+
+	sdlWindow        = nullptr;
+	sdlGLContext     = nullptr;
 
 }//end VideoSystem::VideoSystem()
 
@@ -136,7 +139,7 @@ void VideoSystem::SwapBuffers()
  * \param fRotation  Angle of the camera.
  * \param fIsoBounds Orthographic boundaries.
  */
-void VideoSystem::SetCamera(const bool bIsometric, const Point3f fPosition, const Point2f fRotation, const float fIsoBounds)
+void VideoSystem::SetCamera(const bool &bIsometric, const Point3f &fPosition, const Point2f &fRotation, const float &fIsoBounds)
 {
 	if (bIsometric) {
 		glMatrixMode(GL_PROJECTION);
@@ -242,7 +245,7 @@ void VideoSystem::CreateBuffer(const size_t &iBufferSize, unsigned int* objects)
  * \param iDataSize Total size of the data to add.
  * \param data      Raw data.
  */
-void VideoSystem::AddDataToBuffer(const unsigned int objects, const size_t &iDataSize, const void* data)
+void VideoSystem::AddDataToBuffer(const unsigned int &objects, const size_t &iDataSize, const void* data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, objects);
 	glBufferData(GL_ARRAY_BUFFER, iDataSize, data, GL_STATIC_DRAW);
@@ -257,7 +260,7 @@ void VideoSystem::AddDataToBuffer(const unsigned int objects, const size_t &iDat
  * \param z          Z translation.
  * \param iTextureId Lightmap ID.
  */
-void VideoSystem::BeginFrame(const float &x, const float &y, const float &z, const unsigned int iTextureId)
+void VideoSystem::BeginFrame(const float &x, const float &y, const float &z, const unsigned int &iTextureId)
 {
 	glPushMatrix();
 	glTranslatef(x, y, z);
@@ -287,7 +290,7 @@ void VideoSystem::BeginFrame(const float &x, const float &y, const float &z, con
  * \param iDataSize      Size of each data point.
  * \param iDataArraySize Total size of the data array.
  */
-void VideoSystem::PushData(const unsigned int objects, const unsigned int iTextureId, const unsigned int iDataSize, const size_t iDataArraySize)
+void VideoSystem::PushData(const unsigned int &objects, const unsigned int &iTextureId, const unsigned int &iDataSize, const size_t &iDataArraySize)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, objects);
 
@@ -362,7 +365,7 @@ void VideoSystem::SetupViewport()
  * Enable or disable multisampling for the GL context.
  * \param bEnable Enable or Disable.
  */
-void VideoSystem::SetMultisampling(const bool bEnable)
+void VideoSystem::SetMultisampling(const bool &bEnable)
 {
 	if (bEnable) {
 		glEnable(GL_MULTISAMPLE);
@@ -384,7 +387,7 @@ void VideoSystem::SetMultisampling(const bool bEnable)
  * Enable or disable Vsync for the GL context.
  * \param bEnable Enable or Disable.
  */
-void VideoSystem::SetVsync(const bool bEnable)
+void VideoSystem::SetVsync(const bool &bEnable)
 {
 	bEnable ? SDL_GL_SetSwapInterval(1) : SDL_GL_SetSwapInterval(0);
 	this->m_bVsync = bEnable;

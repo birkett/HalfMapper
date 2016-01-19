@@ -24,8 +24,9 @@
 
 /**
  * Represents a 3D point in space, using 3 float values.
+ * Typedef'ed as Vertex3f.
  */
-struct Point3f
+typedef struct Point3f
 {
 	/** Constructor. */
 	Point3f()
@@ -33,11 +34,28 @@ struct Point3f
 		m_fX = m_fY = m_fZ = 0.0f;
 	}
 
+	/** Constructor. */
+	Point3f(float x, float y, float z)
+	{
+		m_fX = x;
+		m_fY = y;
+		m_fZ = z;
+	}
+
+	/** Convert between coordinate systems. */
+	void FixHand()
+	{
+		float swapY = m_fY;
+		m_fY = m_fZ;
+		m_fZ = swapY;
+		m_fX = -m_fX;
+	}
+
 	float m_fX; /** X postion. */
 	float m_fY; /** Y postition. */
 	float m_fZ; /** Z position. */
 
-};//end Point3f
+} Vertex3f;//end Point3f
 
 
 /**

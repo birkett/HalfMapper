@@ -27,6 +27,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include "CommonTypes.h"
 
 // Formward declarations.
 struct MapEntry;
@@ -61,41 +62,6 @@ enum BSPLumpNames
 	LUMP_COUNT, // 15 total lumps.
 
 };//end BSPLumpNames
-
-
-/**
- * Represent a 3D point in space.
- */
-struct Vertex3f
-{
-	/** Constructor. */
-	Vertex3f()
-	{
-		x = y = z = 0.0f;
-	}
-
-	/** Constructor. */
-	Vertex3f(float _x, float _y, float _z)
-	{
-		x = _x;
-		y = _y;
-		z = _z;
-	}
-
-	/** Convert between coordinate systems. */
-	void FixHand()
-	{
-		float swapY = y;
-		y = z;
-		z = swapY;
-		x = -x;
-	}
-
-	float x; /** X value. */
-	float y; /** Y value. */
-	float z; /** Z value. */
-
-};//end Vertex3f
 
 
 /**
@@ -216,18 +182,23 @@ struct VectorFinal
 	/** Constructor. */
 	VectorFinal(float _x, float _y, float _z, float _u, float _v)
 	{
-		x = _x;
-		y = _y;
-		z = _z;
-		u = _u;
-		v = _v;
+		x  = _x;
+		y  = _y;
+		z  = _z;
+		u  = _u;
+		v  = _v;
+		ul = 0;
+		vl = 0;
 	}
 
 	/** Constructor. */
 	VectorFinal(Vertex3f vt, UVCoordinates c, UVCoordinates c2)
 	{
-		x = vt.x, y = vt.y, z = vt.z;
-		u = c.u, v = c.v;
+		x  = vt.m_fX;
+		y  = vt.m_fY;
+		z  = vt.m_fZ;
+		u  = c.u;
+		v  = c.v;
 		ul = c2.u;
 		vl = c2.v;
 	}
@@ -307,51 +278,45 @@ private:
 
 	/**
 	 * Check if this is a valid v30 BSP.
-	 * \param sHeader BSP Header.
 	 */
-	bool IsValidBSPHeader(const BSPHeader &sHeader);
+	bool IsValidBSPHeader();
 
 	/**
 	 * Parse the entitities in the map.
-	 * \param sHeader   BSP Header.
 	 * \param sMapEntry MapEntry structure.
 	 */
-	void ParseEntities(const BSPHeader &sHeader, const MapEntry &sMapEntry);
+	void ParseEntities(const MapEntry &sMapEntry);
 
 	/**
 	 * Load the faces and lightmaps.
-	 * \param sHeader BSP Header.
 	 */
-	void LoadFacesAndLightMaps(const BSPHeader &sHeader);
+	void LoadFacesAndLightMaps();
 
 	/** Generate the lightmap. */
 	void GenerateLightMaps();
 
 	/**
 	 * Load models from the map.
-	 * \param sHeader BSP Header.
 	 */
-	void LoadModels(const BSPHeader &sHeader);
+	void LoadModels();
 
 	/**
 	 * Load surfaces and edges.
-	 * \param sHeader BSP Header.
 	 */
-	void LoadSurfEdges(const BSPHeader &sHeader);
+	void LoadSurfEdges();
 
 	/**
 	 * Load textures stored in the map.
-	 * \param sHeader BSP Header.
 	 */
-	void LoadTextures(const BSPHeader &sHeader);
+	void LoadTextures();
 
 	/**
 	 * Load the actual map geometry.
-	 * \param sHeader BSP Header.
 	 */
-	void LoadTris(const BSPHeader &sHeader);
+	void LoadTris();
 
 	
+	BSPHeader                                        m_sBSPHeader;        /** The BSP header. */
 	VideoSystem*                                     m_VideoSystem;       /** Pointer to the video system. */
 	std::ifstream                                    m_sBSPFile;          /** File stream. */
 	std::string                                      m_szMapID;           /** Map name. */
