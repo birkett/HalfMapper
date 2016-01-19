@@ -17,7 +17,13 @@ include_directories(${SDL2_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIR
 #Set the CXXFLAGS for Clang, GCC or MINGW.
 #Should cover OSX, Linux and MINGW Windows
 if(UNIX OR MINGW)
-  set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall -Wpedantic -Wextra")
+  set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall -Wpedantic -Wextra -Wshadow -Wnon-virtual-dtor -Wcast-align -Wunused -Woverloaded-virtual")
+
+  #Noisy warnings that may be useful occasionally.
+  if(DEFINED EXTRA_WARNINGS)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++ -Wold-style-cast")
+  endif(DEFINED EXTRA_WARNINGS)
+
 endif(UNIX OR MINGW)
 
 

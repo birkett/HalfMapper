@@ -61,7 +61,7 @@ cd ../half-mapper-build
 cmake ../halfmapper-src
 
 #For a build with memory debugging.
-cmake -DUSE_CRT_LD -DUSE_VLD ../halfmapper-src
+cmake -DUSE_CRT_LD=1 -DUSE_VLD=1 ../halfmapper-src
 
 #VS Solution is now in "halfmapper-build"
 ```
@@ -88,6 +88,12 @@ cmake ../halfmapper-src
 make
 
 #Binary is now in the build folder
+```
+
+
+Additional compiler warnings can be enabled by telling CMake to use them:
+```
+cmake -DEXTRA_WARNINGS=1 ../halfmapper-src
 ```
 
 
