@@ -23,6 +23,7 @@
 #define ILOGENDPOINT_H
 
 #include <string>
+#include "Logger.h"
 
 #define abstract_class class
 
@@ -41,9 +42,10 @@ public:
 
 	/**
 	 * Print messages using an end point.
+	 * \param eLevel    Log level.
 	 * \param szMessage String to send.
 	 */
-	virtual void WriteMessage(const std::string &szMessage) = 0;
+	virtual void WriteMessage(const LogLevel &eLevel, const std::string &szMessage) = 0;
 
 };//end ILogEndPoint
 

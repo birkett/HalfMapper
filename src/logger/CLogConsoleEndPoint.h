@@ -22,6 +22,7 @@
 #ifndef CLOGCONSOLEENDPOINT_H
 #define CLOGCONSOLEENDPOINT_H
 
+#include "Logger.h"
 #include "ILogEndPoint.h"
 
 /**
@@ -38,9 +39,20 @@ public:
 
 	/**
 	 * Print a message to the console.
+	 * \param eLevel    Log level.
 	 * \param szMessage String to print.
 	 */
-	void WriteMessage(const std::string &szMessage);
+	void WriteMessage(const LogLevel &eLevel, const std::string &szMessage);
+
+private:
+	/**
+	 * Set the colour of a message in the console.
+	 * \param eLevel Log level of the message.
+	 */
+	void SetColour(const LogLevel &eLevel);
+
+	/** Reset the console back to default colours. */
+	void ResetColour();
 
 };//end CLogConsoleEndPoint
 

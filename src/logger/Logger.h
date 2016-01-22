@@ -26,7 +26,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "ILogEndPoint.h"
+
+class ILogEndPoint;
+
 
 /**
  * Log levels for specifying message types.
@@ -64,7 +66,7 @@ public:
 	void AddMessage(const LogLevel &eLevel, const FirstItem &szMessage, const MoreItems&... moreArgs)
 	{
 		this->BufferString(this->GetTime(), this->GetMessageType(eLevel), szMessage, moreArgs...);
-		this->SendToEndPoints(this->m_szTempString.str());
+		this->SendToEndPoints(eLevel, this->m_szTempString.str());
 		this->m_szTempString.str("");
 		this->m_szTempString.clear();
 
@@ -122,9 +124,10 @@ private:
 
 	/**
 	 * Dispatch a message to all registered end points.
+	 * \param eLevel    Log level.
 	 * \param szMessage String to send.
 	 */
-	void SendToEndPoints(const std::string &szMessage);
+	void SendToEndPoints(const LogLevel &eLevel, const std::string &szMessage);
 
 
 	std::vector<ILogEndPoint*> m_RegisteredEndPoints; /** Store pointers to registered log end points. */

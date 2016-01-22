@@ -53,11 +53,14 @@ CLogConsoleEndPoint::~CLogConsoleEndPoint()
 
 /**
  * Print a message to the console.
+ * \param eLevel    Log level.
  * \param szMessage String to print.
  */
-void CLogConsoleEndPoint::WriteMessage(const std::string &szMessage)
+void CLogConsoleEndPoint::WriteMessage(const LogLevel &eLevel, const std::string &szMessage)
 {
+	this->SetColour(eLevel);
 	std::cout << szMessage << std::endl;
+	this->ResetColour();
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 	#ifdef _DEBUG
@@ -67,3 +70,77 @@ void CLogConsoleEndPoint::WriteMessage(const std::string &szMessage)
 #endif
 
 }//end CLogConsoleEndPoint::WriteMessage()
+
+
+/**
+ * Set the colour of a message in the console.
+ * \param eLevel Log level of the message.
+ */
+void CLogConsoleEndPoint::SetColour(const LogLevel &eLevel)
+{
+
+// On Windows, use SetConsoleTextAttribute().
+#if defined(_MSC_VER) || defined(__MINGW32__)
+	WORD attributes = FOREGROUND_INTENSITY;
+
+	switch (eLevel)
+	{
+	case E_DEBUG:
+		// Debug messages use the default colour.
+		break;
+	case E_INFO:
+		// Blue for info.
+		attributes |= FOREGROUND_BLUE;
+		break;
+	case E_WARNING:
+		// Yellow for warnings.
+		attributes |= FOREGROUND_RED | FOREGROUND_GREEN;
+		break;
+	case E_ERROR:
+		// Red for errors.
+		attributes |= FOREGROUND_RED;
+		break;
+	}
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), attributes);
+
+// On Linux and MacOSX, use the bash modifiers.
+#elif defined(__APPLE__) || defined(__linux__)
+	switch (eLevel)
+	{
+	case E_DEBUG:
+		// Light grey.
+		std::cout << "\x1b[37;1m";
+		break;
+	case E_INFO:
+		// Blue.
+		std::cout << "\x1b[34;1m";
+		break;
+	case E_WARNING:
+		// Yellow.
+		std::cout << "\x1b[33;1m";
+		break;
+	case E_ERROR:
+		// Red.
+		std::cout << "\x1b[31;1m";
+		break;
+	}
+#endif
+
+}//end CLogConsoleEndPoint::SetColour()
+
+
+/**
+ * Reset the console back to default colours.
+ */
+void CLogConsoleEndPoint::ResetColour()
+{
+// On Windows, use SetConsoleTextAttribute().
+#if defined(_MSC_VER) || defined(__MINGW32__)
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY);
+
+// On Linux and MacOSX, use the bash modifiers.
+#elif defined(__APPLE__) || defined(__linux__)
+	std::cout << "\x1b[0m";
+#endif
+
+}//end CLogConsoleEndPoint:ResetColour()

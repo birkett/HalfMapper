@@ -130,7 +130,7 @@ XMLError ConfigXML::LoadMapConfig(const char *szFilename)
 	XMLError eRetCode = this->m_xmlMapConfig.LoadFile(szFilename);
 
 	if (eRetCode != XML_SUCCESS) {
-		Logger::GetInstance()->AddMessage(E_ERROR, "%s %i", "Error loading map config, code:", eRetCode);
+		Logger::GetInstance()->AddMessage(E_ERROR, "Error loading map config, code:", eRetCode);
 		return eRetCode;
 	}
 

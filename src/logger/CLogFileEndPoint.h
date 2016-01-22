@@ -25,6 +25,11 @@
 #include <fstream>
 #include "ILogEndPoint.h"
 
+#ifndef UNUSED_PARAMETER
+	#define UNUSED_PARAMETER(x) (void)(x)
+#endif
+
+
 /**
  * Print messages to an output log file.
  */
@@ -39,9 +44,10 @@ public:
 
 	/**
 	 * Print a message to the output log file.
+	 * \param eLevel    Log level.
 	 * \param szMessage String to print.
 	 */
-	void WriteMessage(const std::string &szMessage);
+	void WriteMessage(const LogLevel &eLevel, const std::string &szMessage);
 
 private:
 	std::fstream m_sFileStream; /** File output stream. */

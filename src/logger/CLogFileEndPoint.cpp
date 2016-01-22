@@ -44,10 +44,13 @@ CLogFileEndPoint::~CLogFileEndPoint()
 
 /**
  * Print a message to the output log file.
+ * \param eLevel    Log level.
  * \param szMessage String to print.
  */
-void CLogFileEndPoint::WriteMessage(const std::string &szMessage)
+void CLogFileEndPoint::WriteMessage(const LogLevel &eLevel, const std::string &szMessage)
 {
+	UNUSED_PARAMETER(eLevel);
+
 	if (this->m_sFileStream.is_open()) {
 		this->m_sFileStream << szMessage << std::endl;
 	}

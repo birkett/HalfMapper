@@ -23,6 +23,7 @@
 #include <ctime>
 #include <sstream>
 #include "Logger.h"
+#include "ILogEndPoint.h"
 
 
 /**
@@ -111,12 +112,13 @@ void Logger::RegisterEndPoint(ILogEndPoint* endpoint)
 
 /**
  * Dispatch a message to all registered end points.
+ * \param eLevel    Log level.
  * \param szMessage String to send.
  */
-void Logger::SendToEndPoints(const std::string &szMessage)
+void Logger::SendToEndPoints(const LogLevel &eLevel, const std::string &szMessage)
 {
 	for (size_t i = 0; i < this->m_RegisteredEndPoints.size(); i++) {
-		this->m_RegisteredEndPoints[i]->WriteMessage(szMessage);
+		this->m_RegisteredEndPoints[i]->WriteMessage(eLevel, szMessage);
 	}
 
 }//end Logger::SendToEndPoints()
