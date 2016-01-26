@@ -78,8 +78,6 @@ int VideoSystem::Init()
 		windowflags |= SDL_WINDOW_FULLSCREEN;
 	}
 
-	this->SetMultisampling(this->m_bMultisampling); // Setup multisampling before creating the window.
-
 	this->sdlWindow = SDL_CreateWindow("HalfMapper (loading maps, please wait)", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->m_iWidth, this->m_iHeight, windowflags);
 
 	if (this->sdlWindow == NULL) {
@@ -103,7 +101,9 @@ int VideoSystem::Init()
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	this->SetVsync(this->m_bVsync); // Set Vsync after creating the GL context.
+	this->SetMultisampling(this->m_bMultisampling);
+
+	this->SetVsync(this->m_bVsync);
 
 	this->SetupViewport();
 
@@ -181,7 +181,7 @@ void VideoSystem::SetWindowTitle(const char* szTitle)
  */
 unsigned int VideoSystem::CreateTexture(const bool &bIsLightmap)
 {
-	unsigned int iTextureID = 0;
+	GLuint iTextureID = 0;
 
 	glGenTextures(1, &iTextureID);
 	glBindTexture(GL_TEXTURE_2D, iTextureID);
@@ -197,7 +197,7 @@ unsigned int VideoSystem::CreateTexture(const bool &bIsLightmap)
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	return iTextureID;
+	return (unsigned int)iTextureID;
 
 }//end VideoSystem::CreateTexture()
 
@@ -234,7 +234,7 @@ void VideoSystem::AddTexture(const unsigned int &iMipLevel, const unsigned int &
  */
 void VideoSystem::CreateBuffer(const size_t &iBufferSize, unsigned int* objects)
 {
-	glGenBuffers((int)iBufferSize, objects);
+	glGenBuffers((int)iBufferSize, (GLuint*)objects);
 
 }//end VideoSyetem::CreateBuffer()
 

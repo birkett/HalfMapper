@@ -1,7 +1,7 @@
 /*
  * halfmapper, a renderer for GoldSrc maps and chapters.
  *
- * Copyright(C) 2014  Gonzalo Ávila "gzalo" Alterach
+ * Copyright(C) 2014  Gonzalo Ã…vila "gzalo" Alterach
  * Copyright(C) 2015  Anthony "birkett" Birkett
  *
  * This file is part of halfmapper.
@@ -25,6 +25,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <cmath>
 #include "bsp.h"
 #include "ConfigXML.h"
 #include "TextureLoader.h"
@@ -378,7 +379,7 @@ void BSP::LoadFacesAndLightMaps()
 	for (int i = 0; i < this->m_sBSPHeader.lump[LUMP_FACES].iLength / (int)sizeof(BSPFace); i++) {
 		BSPFace f;
 		this->m_sBSPFile.read((char*)&f, sizeof(f));
-		
+
 		if (f.iLightmapOffset > size) {
 			Logger::GetInstance()->AddMessage(E_ERROR, "Lightmap offset too large:", "Map,", this->m_szMapID, "Lightmap size,", size, "Requested offset,", f.iLightmapOffset);
 			f.iLightmapOffset = 0;

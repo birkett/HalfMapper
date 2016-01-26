@@ -36,6 +36,9 @@
 #elif defined(__linux__)
 	#define PATH_DELIM '/'
 	#define HALFLIFE_DEFAULT_GAMEPATH "~/.steam/steamapps/common/Half-Life/valve/"
+#elif defined(__APPLE__)
+	#define PATH_DELIM '/'
+	#define HALFLIFE_DEFAULT_GAMEPATH "/Users/Someone/Steam/steamapps/common/Half-Life/valve/"
 #else
 	#error Platform not supported!
 #endif
